@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "setoran-829dd"
-  }
+  },
+  "targets": {
+    "setoran-829dd": {
+      "hosting": {
+        "main-site": [
+          "setoranku"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
