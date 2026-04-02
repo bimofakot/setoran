@@ -30,7 +30,6 @@ dist-ssr
 
 # Firebase
 .firebase
-.firebaserc
 
 # Build outputs
 build
