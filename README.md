@@ -12,10 +12,12 @@ A modern web application for tracking daily income and expenses with beautiful a
 - **💰 Transaction Tracking**: Record income and expenses with comprehensive categories
 - **📊 Dashboard Analytics**: View financial summaries and statistics
 - **🎯 Date Filtering**: Filter by day, week, month, or year
-- **📥 Data Export**: Export reports in CSV, JSON, and HTML formats
-- **📤 Share Reports**: Share financial summaries with friends and family
+- **📥 Data Export**: Export reports in PDF and Excel (XLSX) formats
+- **📤 Share Reports**: Share financial summaries via WhatsApp
 - **🎨 Modern UI**: Beautiful interface with smooth animations
 - **🌓 Responsive Theme**: Automatically adapts to device theme preferences
+- **⏰ Accurate Time Sync**: Transactions saved with current timestamp (WIB)
+- **🌐 Indonesian Error Messages**: User-friendly login error handling in Bahasa Indonesia
 
 ## 🛠️ Tech Stack
 
@@ -25,6 +27,8 @@ A modern web application for tracking daily income and expenses with beautiful a
 - **Backend/Database**: Firebase (Authentication + Firestore)
 - **Build Tool**: Vite
 - **Package Manager**: npm
+- **PDF Generation**: jsPDF + jspdf-autotable
+- **Excel Export**: XLSX
 
 ## 📋 Requirements
 
@@ -45,6 +49,7 @@ cd setoran
 
 ```bash
 npm install
+npm install jspdf jspdf-autotable xlsx
 ```
 
 ### 3. Firebase Setup
@@ -150,6 +155,18 @@ npm run lint
 - **Never commit `.env` files to git** - Use `.env.example` as a template
 - Always use `import.meta.env.VITE_*` for client-side environment variables
 - Never expose sensitive keys in code
+
+### GitHub Secrets for Firebase API Keys
+For production deployments, store Firebase configuration in GitHub Secrets:
+1. Go to your repository Settings > Secrets and variables > Actions
+2. Add the following secrets:
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+3. In your GitHub Actions workflow, use these secrets to populate environment variables during build
 
 ### Firebase Rules
 

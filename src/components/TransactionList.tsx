@@ -77,11 +77,11 @@ export const TransactionList = ({
             {dayTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="card flex items-center justify-between p-4 hover:shadow-md transition-all"
+                className="card flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 hover:shadow-md transition-all gap-3 sm:gap-4"
               >
-                <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1">
                   <div className={`
-                    p-3 rounded-full
+                    p-2 sm:p-3 rounded-full flex-shrink-0
                     ${
                       transaction.type === 'income'
                         ? 'bg-green-100 text-green-600'
@@ -89,26 +89,26 @@ export const TransactionList = ({
                     }
                   `}>
                     {transaction.type === 'income' ? (
-                      <TrendingUp size={20} />
+                      <TrendingUp size={18} />
                     ) : (
-                      <TrendingDown size={20} />
+                      <TrendingDown size={18} />
                     )}
                   </div>
 
-                  <div className="flex-1">
-                    <p className="font-semibold text-slate-900">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 text-sm sm:text-base">
                       {transaction.category}
                     </p>
                     {transaction.description && (
-                      <p className="text-sm text-slate-500">{transaction.description}</p>
+                      <p className="text-xs sm:text-sm text-slate-500 truncate">{transaction.description}</p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
+                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                  <div className="text-left sm:text-right">
                     <p className={`
-                      font-bold text-lg
+                      font-bold text-base sm:text-lg
                       ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}
                     `}>
                       {transaction.type === 'income' ? '+' : '-'}
@@ -116,21 +116,21 @@ export const TransactionList = ({
                     </p>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 sm:gap-2">
                     <button
                       onClick={() => onEdit(transaction)}
-                      className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+                      className="p-1.5 sm:p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
                       title="Edit"
                     >
-                      <Edit2 size={16} />
+                      <Edit2 size={14} />
                     </button>
                     <button
                       onClick={() => handleDelete(transaction.id)}
                       disabled={deletingId === transaction.id}
-                      className="p-2 text-slate-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-1.5 sm:p-2 text-slate-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors disabled:opacity-50"
                       title="Hapus"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>

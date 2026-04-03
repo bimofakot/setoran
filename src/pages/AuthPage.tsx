@@ -47,7 +47,7 @@ export const Login = ({ onSwitchToSignup }: LoginProps) => {
           <Input
             label="Email"
             type="email"
-            placeholder="email@example.com"
+            placeholder="email@gmail.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

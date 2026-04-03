@@ -40,7 +40,19 @@ export const useAuth = () => {
       const result = await signInWithEmailAndPassword(auth, email, password);
       return result.user;
     } catch (err: any) {
-      const errorMessage = err.message || 'Error signing in';
+      let errorMessage = 'Terjadi kesalahan saat masuk';
+      
+      // Check error code for user-friendly messages
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        errorMessage = 'Email atau password salah, silakan coba lagi';
+      } else if (err.code === 'auth/user-disabled') {
+        errorMessage = 'Akun ini telah dinonaktifkan';
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMessage = 'Terlalu banyak percobaan login. Coba lagi nanti';
+      } else if (err.code === 'auth/network-request-failed') {
+        errorMessage = 'Koneksi internet bermasalah. Periksa koneksi Anda';
+      }
+      
       setError(errorMessage);
       throw err;
     }

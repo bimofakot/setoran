@@ -74,10 +74,23 @@ export const useTransactions = () => {
       setLoading(true);
       setError(null);
 
+      // Combine selected date with current time (hours, minutes, seconds)
+      const selectedDate = new Date(transactionData.date);
+      const now = new Date();
+      const combinedDateTime = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate(),
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds(),
+        now.getMilliseconds()
+      );
+
       const docRef = await addDoc(collection(db, 'transactions'), {
         ...transactionData,
         userId: user.uid,
-        date: Timestamp.fromDate(new Date(transactionData.date)),
+        date: Timestamp.fromDate(combinedDateTime),
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       });
@@ -106,7 +119,19 @@ export const useTransactions = () => {
       };
 
       if (updates.date) {
-        updateData.date = Timestamp.fromDate(new Date(updates.date));
+        // Combine selected date with current time for updates too
+        const selectedDate = new Date(updates.date);
+        const now = new Date();
+        const combinedDateTime = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          now.getHours(),
+          now.getMinutes(),
+          now.getSeconds(),
+          now.getMilliseconds()
+        );
+        updateData.date = Timestamp.fromDate(combinedDateTime);
       }
 
       await updateDoc(transactionRef, updateData);

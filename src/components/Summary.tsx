@@ -19,7 +19,7 @@ export const Summary = ({ transactions, dateLabel }: SummaryProps) => {
   const balance = income - expense;
 
   return (
-    <div className="grid grid-cols-3 gap-4 mb-8 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 w-full">
       {/* Income Card */}
       <div className="card bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500">
         <div className="flex items-center justify-between">
@@ -53,7 +53,7 @@ export const Summary = ({ transactions, dateLabel }: SummaryProps) => {
       </div>
 
       {/* Balance Card */}
-      <div className={`card bg-gradient-to-br border-l-4 ${
+      <div className={`card bg-gradient-to-br border-l-4 col-span-1 sm:col-span-2 lg:col-span-1 ${
         balance >= 0
           ? 'from-blue-50 to-blue-100 border-blue-500'
           : 'from-yellow-50 to-yellow-100 border-yellow-500'
