@@ -48,9 +48,14 @@ A premium personal finance web app for tracking daily income and expenses. Built
 - **Excel export** — full transaction data with summary sheet
 
 ### 💬 Multi-Channel Support
-- **Hubungi Kami** — choose between WhatsApp or Email
-- **Auto-filled message** — name, source, and issue template pre-populated
-- **Professional copy** — clear, formal Indonesian language
+- **Hubungi Kami** — pilih WhatsApp atau Email langsung dari sidebar
+- **Auto-filled message** — nama, sumber, dan template kendala sudah terisi otomatis
+- **Menu Bantuan** — panduan onboarding 5 langkah di sidebar untuk user baru
+
+### 🔐 Account Security
+- **Ganti Password** — form reauthentication + update password di halaman Profil
+- **Kategori terkunci** — "Lainnya" tidak bisa dihapus untuk menjaga integritas data
+- **Konfirmasi hapus** — alert sebelum menghapus kategori dengan pesan peringatan jelas
 
 ---
 

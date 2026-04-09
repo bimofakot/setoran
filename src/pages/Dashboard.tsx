@@ -21,8 +21,16 @@ const SUPPORT_EMAIL = 'andraani30@gmail.com';
 import {
   Plus, Menu, X, BarChart3, LayoutDashboard,
   Share2, UserCircle, ChevronRight, Wallet,
-  Sun, Moon, Monitor, LogOut, MessageCircle, Mail,
+  Sun, Moon, Monitor, LogOut, MessageCircle, Mail, HelpCircle,
 } from 'lucide-react';
+
+const HELP_STEPS = [
+  { icon: '➕', title: 'Catat Transaksi', desc: 'Klik tombol "+ Tambah Transaksi" untuk mencatat pemasukan atau pengeluaran.' },
+  { icon: '🗂️', title: 'Pilih Kategori', desc: 'Pilih kategori yang sesuai. Pilih "Lainnya" untuk kategori bebas.' },
+  { icon: '📊', title: 'Lihat Analisis', desc: 'Buka tab Analisis untuk melihat tren 7 hari dan perbandingan bulanan.' },
+  { icon: '📄', title: 'Export Laporan', desc: 'Klik "Bagikan / Export" untuk unduh PDF atau Excel, atau kirim via WhatsApp.' },
+  { icon: '🎨', title: 'Ganti Tema', desc: 'Gunakan toggle Tampilan di sidebar untuk beralih antara mode Gelap, Terang, atau Sistem.' },
+];
 
 type ActivePage = 'dashboard' | 'analytics' | 'profile';
 
@@ -87,6 +95,7 @@ export const Dashboard = () => {
   const [filteredTransactions, setFilteredTransactions] = useState(transactions);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showContactMenu, setShowContactMenu] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => { fetchTransactions(); }, []);
 
@@ -210,6 +219,24 @@ ${name}`
               <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Untuk lampiran dokumen</p>
             </div>
           </button>
+        </div>
+      )}
+
+      {/* Bantuan */}
+      <button onClick={() => setShowHelp(v => !v)} className="nav-item">
+        <HelpCircle size={16} /> Bantuan
+      </button>
+      {showHelp && (
+        <div className="mx-1 mb-1 rounded-xl border p-3 space-y-2.5 animate-fade-up" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
+          {HELP_STEPS.map((s) => (
+            <div key={s.title} className="flex gap-2.5">
+              <span className="text-base shrink-0 mt-0.5">{s.icon}</span>
+              <div>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{s.title}</p>
+                <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{s.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

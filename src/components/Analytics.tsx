@@ -17,7 +17,6 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
       return d;
     });
 
-    // Daily trend
     const dailyData = last7Days.map((date) => {
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
@@ -32,7 +31,6 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
       };
     });
 
-    // Category breakdown (expense only)
     const categoryMap = new Map<string, number>();
     transactions
       .filter((t) => t.type === 'expense')
@@ -43,99 +41,67 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
       .slice(0, 5);
     const categoryTotal = categoryData.reduce((s, c) => s + c.total, 0);
 
-    // Monthly comparison
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-    const thisMonthTx = transactions.filter((t) => {
-      const td = new Date(t.date);
-      return td >= thisMonth && td < nextMonth;
-    });
-    const lastMonthTx = transactions.filter((t) => {
-      const td = new Date(t.date);
-      return td >= lastMonth && td < thisMonth;
-    });
+    const thisMonthTx = transactions.filter((t) => { const td = new Date(t.date); return td >= thisMonth && td < nextMonth; });
+    const lastMonthTx = transactions.filter((t) => { const td = new Date(t.date); return td >= lastMonth && td < thisMonth; });
 
     return {
       dailyData,
       categoryData: categoryData.map((c) => ({ ...c, pct: (c.total / categoryTotal) * 100 })),
       monthly: {
-        thisIncome: thisMonthTx.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+        thisIncome:  thisMonthTx.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0),
         thisExpense: thisMonthTx.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
-        lastIncome: lastMonthTx.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+        lastIncome:  lastMonthTx.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0),
         lastExpense: lastMonthTx.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
       },
     };
   }, [transactions]);
 
-  const maxDaily = Math.max(
-    ...analytics.dailyData.map((d) => Math.max(d.income, d.expense)),
-    1
-  );
-
-  const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+  const maxDaily = Math.max(...analytics.dailyData.map((d) => Math.max(d.income, d.expense)), 1);
+  const colors = ['#7c3aed', '#3b82f6', '#ec4899', '#f59e0b', '#10b981'];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Trend Line Chart */}
       <div className="card">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp size={20} className="text-blue-600" />
-          <h3 className="text-lg font-bold text-slate-900">Tren 7 Hari Terakhir</h3>
+          <TrendingUp size={18} style={{ color: 'var(--accent-light)' }} />
+          <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Tren 7 Hari Terakhir</h3>
         </div>
-        <div className="relative h-64 bg-slate-50 rounded-lg p-4">
+        <div className="relative h-56 rounded-xl p-4" style={{ background: 'var(--bg-subtle)' }}>
           <svg viewBox="0 0 700 200" className="w-full h-full">
-            {/* Grid lines */}
             {[0, 25, 50, 75, 100].map((pct) => (
-              <line
-                key={pct}
-                x1="40"
-                y1={180 - pct * 1.6}
-                x2="680"
-                y2={180 - pct * 1.6}
-                stroke="#e2e8f0"
-                strokeWidth="1"
-              />
+              <line key={pct} x1="40" y1={180 - pct * 1.6} x2="680" y2={180 - pct * 1.6}
+                stroke="currentColor" strokeWidth="0.5" className="text-[var(--border)]" opacity="0.5" />
             ))}
-            {/* Income line */}
             <polyline
-              points={analytics.dailyData
-                .map((d, i) => `${60 + i * 100},${180 - (d.income / maxDaily) * 160}`)
-                .join(' ')}
-              fill="none"
-              stroke="#16a34a"
-              strokeWidth="3"
-            />
-            {/* Expense line */}
+              points={analytics.dailyData.map((d, i) => `${60 + i * 100},${180 - (d.income / maxDaily) * 160}`).join(' ')}
+              fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinejoin="round" />
             <polyline
-              points={analytics.dailyData
-                .map((d, i) => `${60 + i * 100},${180 - (d.expense / maxDaily) * 160}`)
-                .join(' ')}
-              fill="none"
-              stroke="#dc2626"
-              strokeWidth="3"
-            />
-            {/* Points */}
+              points={analytics.dailyData.map((d, i) => `${60 + i * 100},${180 - (d.expense / maxDaily) * 160}`).join(' ')}
+              fill="none" stroke="var(--red)" strokeWidth="2.5" strokeLinejoin="round" />
             {analytics.dailyData.map((d, i) => (
               <g key={i}>
-                <circle cx={60 + i * 100} cy={180 - (d.income / maxDaily) * 160} r="4" fill="#16a34a" />
-                <circle cx={60 + i * 100} cy={180 - (d.expense / maxDaily) * 160} r="4" fill="#dc2626" />
-                <text x={60 + i * 100} y="195" fontSize="10" textAnchor="middle" fill="#64748b">
+                <circle cx={60 + i * 100} cy={180 - (d.income / maxDaily) * 160} r="4" fill="var(--green)" />
+                <circle cx={60 + i * 100} cy={180 - (d.expense / maxDaily) * 160} r="4" fill="var(--red)" />
+                <text x={60 + i * 100} y="198" fontSize="10" textAnchor="middle" fill="var(--text-muted)">
                   {d.date.getDate()}/{d.date.getMonth() + 1}
                 </text>
               </g>
             ))}
           </svg>
         </div>
-        <div className="flex justify-center gap-6 mt-4 text-sm">
+        <div className="flex justify-center gap-6 mt-3 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-600 rounded-full" />
-            <span className="text-slate-600">Pemasukan</span>
+            <div className="w-3 h-3 rounded-full" style={{ background: 'var(--green)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>Pemasukan</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-600 rounded-full" />
-            <span className="text-slate-600">Pengeluaran</span>
+            <div className="w-3 h-3 rounded-full" style={{ background: 'var(--red)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>Pengeluaran</span>
           </div>
         </div>
       </div>
@@ -144,13 +110,13 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
         {/* Category Pie Chart */}
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
-            <PieChart size={20} className="text-purple-600" />
-            <h3 className="text-lg font-bold text-slate-900">Top 5 Kategori Pengeluaran</h3>
+            <PieChart size={18} style={{ color: 'var(--accent-light)' }} />
+            <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Top 5 Kategori Pengeluaran</h3>
           </div>
           {analytics.categoryData.length > 0 ? (
             <>
               <div className="flex justify-center mb-4">
-                <svg viewBox="0 0 200 200" className="w-48 h-48">
+                <svg viewBox="0 0 200 200" className="w-44 h-44">
                   {analytics.categoryData.reduce((acc, cat, i) => {
                     const startAngle = acc.angle;
                     const angle = (cat.pct / 100) * 360;
@@ -161,11 +127,7 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
                     const x2 = 100 + 80 * Math.cos((Math.PI * endAngle) / 180);
                     const y2 = 100 + 80 * Math.sin((Math.PI * endAngle) / 180);
                     acc.paths.push(
-                      <path
-                        key={i}
-                        d={`M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z`}
-                        fill={colors[i]}
-                      />
+                      <path key={i} d={`M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z`} fill={colors[i]} />
                     );
                     acc.angle = endAngle;
                     return acc;
@@ -176,83 +138,56 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
                 {analytics.categoryData.map((cat, i) => (
                   <div key={i} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors[i] }} />
-                      <span className="text-slate-700">{cat.name}</span>
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: colors[i] }} />
+                      <span style={{ color: 'var(--text-secondary)' }}>{cat.name}</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-semibold text-slate-900">{formatCurrency(cat.total)}</span>
-                      <span className="text-slate-500 ml-2">({cat.pct.toFixed(1)}%)</span>
+                      <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(cat.total)}</span>
+                      <span className="ml-2 text-xs" style={{ color: 'var(--text-muted)' }}>({cat.pct.toFixed(1)}%)</span>
                     </div>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <p className="text-center text-slate-500 py-8">Belum ada data pengeluaran</p>
+            <p className="text-center py-8" style={{ color: 'var(--text-muted)' }}>Belum ada data pengeluaran</p>
           )}
         </div>
 
         {/* Monthly Comparison */}
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart3 size={20} className="text-orange-600" />
-            <h3 className="text-lg font-bold text-slate-900">Perbandingan Bulanan</h3>
+            <BarChart3 size={18} style={{ color: 'var(--accent-light)' }} />
+            <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Perbandingan Bulanan</h3>
           </div>
           <div className="space-y-6">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600">Pemasukan</span>
-                <div className="flex gap-4">
-                  <span className="text-slate-500">Bulan Lalu: {formatCurrency(analytics.monthly.lastIncome)}</span>
-                  <span className="font-semibold text-green-600">Bulan Ini: {formatCurrency(analytics.monthly.thisIncome)}</span>
-                </div>
-              </div>
-              <div className="flex gap-2 h-8">
-                <div className="flex-1 bg-green-200 rounded" style={{ width: '50%' }}>
-                  <div
-                    className="h-full bg-green-500 rounded flex items-center justify-end pr-2 text-xs text-white font-semibold"
-                    style={{ width: `${Math.min((analytics.monthly.lastIncome / Math.max(analytics.monthly.thisIncome, analytics.monthly.lastIncome, 1)) * 100, 100)}%` }}
-                  >
-                    {analytics.monthly.lastIncome > 0 && 'Lalu'}
+            {[
+              { label: 'Pemasukan', thisVal: analytics.monthly.thisIncome, lastVal: analytics.monthly.lastIncome, color: 'var(--green)', bg: 'rgba(16,185,129,0.12)' },
+              { label: 'Pengeluaran', thisVal: analytics.monthly.thisExpense, lastVal: analytics.monthly.lastExpense, color: 'var(--red)', bg: 'rgba(239,68,68,0.12)' },
+            ].map(({ label, thisVal, lastVal, color, bg }) => {
+              const maxVal = Math.max(thisVal, lastVal, 1);
+              return (
+                <div key={label}>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                    <div className="flex gap-4 text-xs">
+                      <span style={{ color: 'var(--text-muted)' }}>Lalu: {formatCurrency(lastVal)}</span>
+                      <span className="font-semibold" style={{ color }}> Ini: {formatCurrency(thisVal)}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 h-7">
+                    {[lastVal, thisVal].map((val, idx) => (
+                      <div key={idx} className="flex-1 rounded-lg overflow-hidden" style={{ background: bg }}>
+                        <div className="h-full rounded-lg flex items-center justify-end pr-2 text-xs text-white font-semibold transition-all duration-500"
+                          style={{ width: `${Math.min((val / maxVal) * 100, 100)}%`, background: color, opacity: idx === 0 ? 0.7 : 1 }}>
+                          {val > 0 && (idx === 0 ? 'Lalu' : 'Ini')}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div className="flex-1 bg-green-200 rounded" style={{ width: '50%' }}>
-                  <div
-                    className="h-full bg-green-600 rounded flex items-center justify-end pr-2 text-xs text-white font-semibold"
-                    style={{ width: `${Math.min((analytics.monthly.thisIncome / Math.max(analytics.monthly.thisIncome, analytics.monthly.lastIncome, 1)) * 100, 100)}%` }}
-                  >
-                    {analytics.monthly.thisIncome > 0 && 'Ini'}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-600">Pengeluaran</span>
-                <div className="flex gap-4">
-                  <span className="text-slate-500">Bulan Lalu: {formatCurrency(analytics.monthly.lastExpense)}</span>
-                  <span className="font-semibold text-red-600">Bulan Ini: {formatCurrency(analytics.monthly.thisExpense)}</span>
-                </div>
-              </div>
-              <div className="flex gap-2 h-8">
-                <div className="flex-1 bg-red-200 rounded" style={{ width: '50%' }}>
-                  <div
-                    className="h-full bg-red-500 rounded flex items-center justify-end pr-2 text-xs text-white font-semibold"
-                    style={{ width: `${Math.min((analytics.monthly.lastExpense / Math.max(analytics.monthly.thisExpense, analytics.monthly.lastExpense, 1)) * 100, 100)}%` }}
-                  >
-                    {analytics.monthly.lastExpense > 0 && 'Lalu'}
-                  </div>
-                </div>
-                <div className="flex-1 bg-red-200 rounded" style={{ width: '50%' }}>
-                  <div
-                    className="h-full bg-red-600 rounded flex items-center justify-end pr-2 text-xs text-white font-semibold"
-                    style={{ width: `${Math.min((analytics.monthly.thisExpense / Math.max(analytics.monthly.thisExpense, analytics.monthly.lastExpense, 1)) * 100, 100)}%` }}
-                  >
-                    {analytics.monthly.thisExpense > 0 && 'Ini'}
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>

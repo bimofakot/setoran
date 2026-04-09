@@ -343,8 +343,9 @@
   .page-subtitle { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
-  /* Extra bottom padding on mobile to clear 4-item bottom nav (4rem) + safe area */
-  .mobile-pb { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)); }
+  /* Mobile bottom padding — matches bottom nav height */
+  --bottom-nav-h: 4rem;
+  .mobile-pb { padding-bottom: calc(var(--bottom-nav-h) + 1.5rem + env(safe-area-inset-bottom, 0px)); }
 
   /* ── Theme toggle button ── */
   .theme-btn {

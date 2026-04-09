@@ -2,14 +2,20 @@ import { useState } from 'react';
 import { useProfile } from '../hooks/useProfile';
 import { useCategories } from '../hooks/useCategories';
 import { useAuth } from '../hooks/useAuth';
-import { Button } from '../components/ui';
-import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2, MessageCircle, LogOut, Mail, X } from 'lucide-react';
+import { Button, Input } from '../components/ui';
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2, MessageCircle, LogOut, Mail, X, Lock } from 'lucide-react';
 import { AVATARS, getAvatarById } from '../lib/avatars';
 
 // ── CONTACT CONFIG — update these when contact info changes ──
 const SUPPORT_WA  = '6285872194248';   // nomor WA admin (tanpa +)
 const SUPPORT_EMAIL = 'andraani30@gmail.com'; // email support
 // ────────────────────────────────────────────────────────────
+
+// Categories that cannot be deleted
+const LOCKED_CATEGORIES = ['Lainnya'];
+const isLocked = (name: string) => LOCKED_CATEGORIES.includes(name);
 
 const AvatarDisplay = ({ avatarId, size = 48 }: { avatarId: string; size?: number }) => {
   const avatar = getAvatarById(avatarId);
@@ -31,6 +37,37 @@ export const ProfilePage = () => {
   const [addingCat, setAddingCat] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showContactMenu, setShowContactMenu] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwError, setPwError] = useState('');
+  const [pwSaved, setPwSaved] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwError('');
+    if (pwForm.next.length < 6) { setPwError('Password baru minimal 6 karakter'); return; }
+    if (pwForm.next !== pwForm.confirm) { setPwError('Konfirmasi password tidak cocok'); return; }
+    setPwLoading(true);
+    try {
+      const u = auth.currentUser!;
+      const cred = EmailAuthProvider.credential(u.email!, pwForm.current);
+      await reauthenticateWithCredential(u, cred);
+      await updatePassword(u, pwForm.next);
+      setPwSaved(true);
+      setPwForm({ current: '', next: '', confirm: '' });
+      setTimeout(() => setPwSaved(false), 3000);
+    } catch (err: any) {
+      setPwError(err.code === 'auth/wrong-password' ? 'Password saat ini salah' : err.message);
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = (id: string, name: string) => {
+    if (isLocked(name)) return;
+    if (!confirm(`Hapus kategori "${name}"?\n\nData yang sudah dihapus tidak bisa dipulihkan dan akan dihapus permanen dari database.`)) return;
+    removeCategory(id);
+  };
 
   if (!loading && form.displayName === '' && profile.displayName !== '') {
     setForm(profile);
@@ -249,13 +286,19 @@ ${name}`
                     style={{ background: 'transparent' }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{cat.name}</span>
-                    {/* Always visible on mobile, hover on desktop */}
-                    <button onClick={() => removeCategory(cat.id)}
-                      className="p-1.5 rounded-lg transition-colors text-red-400 hover:bg-red-500/10 md:opacity-0 md:group-hover:opacity-100"
-                      style={{ opacity: undefined }}
-                      aria-label={`Hapus ${cat.name}`}>
-                      <Trash2 size={13} />
+                    <div className="flex items-center gap-2">
+                      {isLocked(cat.name) && <Lock size={10} style={{ color: 'var(--text-muted)' }} />}
+                      <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{cat.name}</span>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                      disabled={isLocked(cat.name)}
+                      className="p-1.5 rounded-lg transition-colors"
+                      style={{ color: isLocked(cat.name) ? 'var(--text-muted)' : 'var(--red-light)', opacity: isLocked(cat.name) ? 0.3 : 1, cursor: isLocked(cat.name) ? 'not-allowed' : 'pointer' }}
+                      title={isLocked(cat.name) ? 'Kategori ini dikunci' : `Hapus ${cat.name}`}
+                      onMouseEnter={e => { if (!isLocked(cat.name)) (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+                      {isLocked(cat.name) ? <Lock size={13} /> : <Trash2 size={13} />}
                     </button>
                   </div>
                 ))}
@@ -263,6 +306,31 @@ ${name}`
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Change Password */}
+      <div className="card">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Lock size={18} className="text-white" />
+          </div>
+          <div>
+            <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>Ganti Password</h2>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Perbarui kata sandi akun Anda</p>
+          </div>
+        </div>
+        <form onSubmit={handleChangePassword} className="space-y-3">
+          <Input label="Password Saat Ini" type="password" placeholder="••••••••"
+            value={pwForm.current} onChange={e => setPwForm({ ...pwForm, current: e.target.value })} required />
+          <Input label="Password Baru" type="password" placeholder="Minimal 6 karakter"
+            value={pwForm.next} onChange={e => setPwForm({ ...pwForm, next: e.target.value })} required />
+          <Input label="Konfirmasi Password Baru" type="password" placeholder="Ulangi password baru"
+            value={pwForm.confirm} onChange={e => setPwForm({ ...pwForm, confirm: e.target.value })} required />
+          {pwError && <p className="text-xs text-red-400">{pwError}</p>}
+          <Button type="submit" fullWidth loading={pwLoading}>
+            {pwSaved ? <><CheckCircle2 size={15} /> Password Diperbarui!</> : <><Lock size={15} /> Simpan Password Baru</>}
+          </Button>
+        </form>
       </div>
 
       {/* Support & Logout */}
