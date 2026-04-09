@@ -7,8 +7,8 @@ import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2, MessageCir
 import { AVATARS, getAvatarById } from '../lib/avatars';
 
 // ── CONTACT CONFIG — update these when contact info changes ──
-const SUPPORT_WA  = '6281234567890';   // nomor WA admin (tanpa +)
-const SUPPORT_EMAIL = 'support@massbim.my.id'; // email support
+const SUPPORT_WA  = '6285872194248';   // nomor WA admin (tanpa +)
+const SUPPORT_EMAIL = 'andraani30@gmail.com'; // email support
 // ────────────────────────────────────────────────────────────
 
 const AvatarDisplay = ({ avatarId, size = 48 }: { avatarId: string; size?: number }) => {
