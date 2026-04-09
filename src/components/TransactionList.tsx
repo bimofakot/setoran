@@ -10,143 +10,138 @@ interface TransactionListProps {
   loading?: boolean;
 }
 
-export const TransactionList = ({
-  transactions,
-  onEdit,
-  onDelete,
-}: TransactionListProps) => {
+// Map category to emoji
+const CATEGORY_EMOJI: Record<string, string> = {
+  'Gaji': '💼', 'Salary': '💼', 'Freelance': '💻', 'Investasi': '📈',
+  'Makanan': '🍜', 'Food': '🍜', 'Makan': '🍜',
+  'Transport': '🚗', 'Transportasi': '🚗',
+  'Belanja': '🛍️', 'Shopping': '🛍️',
+  'Hiburan': '🎮', 'Entertainment': '🎮',
+  'Kesehatan': '💊', 'Health': '💊',
+  'Pendidikan': '📚', 'Education': '📚',
+  'Tagihan': '📄', 'Bills': '📄', 'Listrik': '⚡', 'Air': '💧',
+  'Tabungan': '🏦', 'Savings': '🏦',
+  'Lainnya': '📦', 'Other': '📦',
+};
+
+const getCategoryEmoji = (category: string) => {
+  for (const [key, emoji] of Object.entries(CATEGORY_EMOJI)) {
+    if (category.toLowerCase().includes(key.toLowerCase())) return emoji;
+  }
+  return category.charAt(0).toUpperCase();
+};
+
+export const TransactionList = ({ transactions, onEdit, onDelete }: TransactionListProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
-      try {
-        setDeletingId(id);
-        await onDelete(id);
-      } catch (error) {
-        console.error('Error deleting transaction:', error);
-      } finally {
-        setDeletingId(null);
-      }
-    }
+    if (!confirm('Hapus transaksi ini?')) return;
+    setDeletingId(id);
+    try { await onDelete(id); } finally { setDeletingId(null); }
   };
 
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-slate-500 text-lg">Tidak ada transaksi ditemukan</p>
-        <p className="text-slate-400 text-sm">Mulai dengan menambahkan transaksi baru</p>
+      <div className="text-center py-16">
+        <div className="w-16 h-16 bg-white/3 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/06">
+          <span className="text-3xl">📭</span>
+        </div>
+        <p className="text-slate-400 font-semibold">Belum ada transaksi</p>
+        <p className="text-slate-600 text-sm mt-1">Mulai catat pemasukan atau pengeluaran kamu</p>
       </div>
     );
   }
 
-  // Group transactions by date
-  const groupedByDate = transactions.reduce((acc, transaction) => {
-    const dateKey = formatDate(transaction.date, 'short');
-    if (!acc[dateKey]) {
-      acc[dateKey] = [];
-    }
-    acc[dateKey].push(transaction);
+  const grouped = transactions.reduce((acc, t) => {
+    const key = formatDate(t.date, 'short');
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(t);
     return acc;
   }, {} as Record<string, Transaction[]>);
 
   return (
-    <div className="space-y-4">
-      {Object.entries(groupedByDate).map(([dateKey, dayTransactions]) => (
-        <div key={dateKey}>
-          <div className="sticky top-0 bg-gradient-to-r from-slate-100 to-slate-50 py-2 px-4 rounded-lg mb-2">
-            <p className="font-semibold text-slate-700">{dateKey}</p>
-            <div className="flex gap-6 text-sm">
-              <span className="text-green-600">
-                + {formatCurrency(
-                  dayTransactions
-                    .filter((t) => t.type === 'income')
-                    .reduce((sum, t) => sum + t.amount, 0)
-                )}
-              </span>
-              <span className="text-red-600">
-                - {formatCurrency(
-                  dayTransactions
-                    .filter((t) => t.type === 'expense')
-                    .reduce((sum, t) => sum + t.amount, 0)
-                )}
-              </span>
+    <div className="space-y-6">
+      {Object.entries(grouped).map(([dateKey, dayTx]) => {
+        const dayIncome  = dayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        const dayExpense = dayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        return (
+          <div key={dateKey}>
+            {/* Date header */}
+            <div className="flex items-center justify-between mb-2.5 px-1">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{dateKey}</p>
+              </div>
+              <div className="flex gap-3 text-xs font-semibold">
+                {dayIncome  > 0 && <span className="text-emerald-400">+{formatCurrency(dayIncome)}</span>}
+                {dayExpense > 0 && <span className="text-red-400">−{formatCurrency(dayExpense)}</span>}
+              </div>
+            </div>
+
+            {/* Rows */}
+            <div className="rounded-xl overflow-hidden border border-white/06 divide-y divide-white/04">
+              {dayTx.map((t, idx) => {
+                const emoji = getCategoryEmoji(t.category);
+                const isEmoji = emoji.length > 1;
+                return (
+                  <div
+                    key={t.id}
+                    className={`flex items-center gap-3 px-4 py-3.5 group transition-colors hover:bg-white/[0.03] ${idx % 2 === 1 ? 'bg-white/[0.012]' : ''}`}
+                  >
+                    {/* Category icon */}
+                    <div className={`cat-icon shrink-0 ${
+                      t.type === 'income'
+                        ? 'bg-emerald-500/8 border border-emerald-500/16'
+                        : 'bg-red-500/8 border border-red-500/16'
+                    }`}>
+                      {isEmoji ? (
+                        <span className="text-base">{emoji}</span>
+                      ) : (
+                        <span className={`text-sm font-bold ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>{emoji}</span>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-200 truncate">{t.category}</p>
+                      {t.description && <p className="text-xs text-slate-500 truncate mt-0.5">{t.description}</p>}
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        {new Date(t.date).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+
+                    {/* Amount */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <p className={`text-sm font-bold ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {t.type === 'income' ? '+' : '−'}{formatCurrency(t.amount)}
+                        </p>
+                        <div className={`flex items-center justify-end gap-0.5 mt-0.5 ${t.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {t.type === 'income'
+                            ? <TrendingUp size={10} />
+                            : <TrendingDown size={10} />}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                        <button onClick={() => onEdit(t)}
+                          className="p-1.5 rounded-lg hover:bg-violet-500/12 text-slate-600 hover:text-violet-400 transition-colors">
+                          <Edit2 size={13} />
+                        </button>
+                        <button onClick={() => handleDelete(t.id)} disabled={deletingId === t.id}
+                          className="p-1.5 rounded-lg hover:bg-red-500/12 text-slate-600 hover:text-red-400 transition-colors disabled:opacity-40">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-
-          <div className="space-y-0 mb-6 rounded-xl overflow-hidden border border-gray-100">
-            {dayTransactions.map((transaction, idx) => (
-              <div
-                key={transaction.id}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 sm:py-4 hover:shadow-md transition-all gap-3 sm:gap-4 border-b border-gray-50 last:border-b-0 ${
-                  idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'
-                }`}
-              >
-                <div className="flex items-center gap-3 sm:gap-4 flex-1">
-                  <div className={`
-                    p-2 sm:p-3 rounded-full flex-shrink-0
-                    ${
-                      transaction.type === 'income'
-                        ? 'bg-green-100 text-green-600'
-                        : 'bg-red-100 text-red-600'
-                    }
-                  `}>
-                    {transaction.type === 'income' ? (
-                      <TrendingUp size={18} />
-                    ) : (
-                      <TrendingDown size={18} />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900 text-sm sm:text-base">
-                      {transaction.category}
-                    </p>
-                    {transaction.description && (
-                      <p className="text-xs sm:text-sm text-slate-500 truncate">{transaction.description}</p>
-                    )}
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {new Date(transaction.date).toLocaleString('id-ID', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit',
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                  <div className="text-left sm:text-right">
-                    <p className={`
-                      font-bold text-base sm:text-lg
-                      ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}
-                    `}>
-                      {transaction.type === 'income' ? '+' : '-'}
-                      {formatCurrency(transaction.amount)}
-                    </p>
-                  </div>
-
-                  <div className="flex gap-1 sm:gap-2">
-                    <button
-                      onClick={() => onEdit(transaction)}
-                      className="p-1.5 sm:p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
-                      title="Edit"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(transaction.id)}
-                      disabled={deletingId === transaction.id}
-                      className="p-1.5 sm:p-2 text-slate-500 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors disabled:opacity-50"
-                      title="Hapus"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

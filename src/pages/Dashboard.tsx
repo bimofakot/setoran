@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import type { DateRange, Transaction } from '../types';
-import { Button } from '../components/ui';
 import { TransactionForm } from '../components/TransactionForm';
 import { TransactionList } from '../components/TransactionList';
 import { Summary, QuickStats } from '../components/Summary';
@@ -12,63 +11,53 @@ import { useTransactions } from '../hooks/useTransactions';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { getDateRange } from '../utils/helpers';
-import { Plus, LogOut, Menu, X, UserCircle, BarChart3 } from 'lucide-react';
+import {
+  Plus, LogOut, Menu, X, BarChart3, LayoutDashboard,
+  Share2, UserCircle, ChevronRight, Wallet
+} from 'lucide-react';
+
+type ActivePage = 'dashboard' | 'analytics' | 'profile';
+
+const NAV_ITEMS = [
+  { id: 'dashboard' as ActivePage, label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'analytics' as ActivePage, label: 'Analisis', icon: BarChart3 },
+];
 
 export const Dashboard = () => {
   const { logout, user } = useAuth();
   const { profile } = useProfile();
-  const {
-    transactions,
-    loading,
-    error,
-    fetchTransactions,
-    addTransaction,
-    updateTransaction,
-    deleteTransaction,
-  } = useTransactions();
+  const { transactions, loading, error, fetchTransactions, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics'>('dashboard');
+  const [activePage, setActivePage] = useState<ActivePage>('dashboard');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
   const [selectedRange, setSelectedRange] = useState<DateRange>('today');
   const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [filteredTransactions, setFilteredTransactions] = useState(transactions);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Fetch transactions on mount
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  useEffect(() => { fetchTransactions(); }, []);
 
-  // Filter transactions based on selected range
   useEffect(() => {
     if (selectedRange === 'custom' && customRange) {
-      setFilteredTransactions(
-        transactions.filter((t) => {
-          const td = new Date(t.date);
-          return td >= customRange.start && td <= customRange.end;
-        })
-      );
+      setFilteredTransactions(transactions.filter((t) => {
+        const td = new Date(t.date);
+        return td >= customRange.start && td <= customRange.end;
+      }));
     } else {
       const { startDate, endDate } = getDateRange(selectedRange);
-      setFilteredTransactions(
-        transactions.filter((t) => {
-          const td = new Date(t.date);
-          return td >= startDate && td <= endDate;
-        })
-      );
+      setFilteredTransactions(transactions.filter((t) => {
+        const td = new Date(t.date);
+        return td >= startDate && td <= endDate;
+      }));
     }
   }, [selectedRange, transactions, customRange]);
 
   const handleDateRangeChange = (range: DateRange, startDate?: Date, endDate?: Date) => {
     setSelectedRange(range);
-    if (range === 'custom' && startDate && endDate) {
-      setCustomRange({ start: startDate, end: endDate });
-    } else {
-      setCustomRange(null);
-    }
+    if (range === 'custom' && startDate && endDate) setCustomRange({ start: startDate, end: endDate });
+    else setCustomRange(null);
   };
 
   const handleAddTransaction = async (data: any) => {
@@ -80,225 +69,192 @@ export const Dashboard = () => {
     }
   };
 
-  const handleEdit = (t: Transaction) => {
-    setEditingTransaction(t);
-    setIsFormOpen(true);
-  };
+  const handleEdit = (t: Transaction) => { setEditingTransaction(t); setIsFormOpen(true); };
+  const handleLogout = async () => { try { await logout(); } catch (e) { console.error(e); } };
+  const navigate = (page: ActivePage) => { setActivePage(page); setSidebarOpen(false); };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+  const dateLabel = { today: 'Hari Ini', week: 'Minggu Ini', month: 'Bulan Ini', year: 'Tahun Ini', custom: 'Custom' }[selectedRange];
+  const displayName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'User';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
-  const getDateRangeLabel = () => {
-    const labels: Record<DateRange, string> = {
-      today: 'Hari Ini',
-      week: 'Minggu Ini',
-      month: 'Bulan Ini',
-      year: 'Tahun Ini',
-      custom: 'Custom',
-    };
-    return labels[selectedRange];
-  };
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div className="sidebar-logo">
+        <div className="sidebar-logo-icon">💰</div>
+        <span className="sidebar-logo-text">Keuanganku</span>
+      </div>
+
+      {/* Main nav */}
+      <span className="sidebar-section">Menu</span>
+      {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+        <button key={id} onClick={() => navigate(id)} className={`nav-item ${activePage === id ? 'active' : ''}`}>
+          <Icon size={16} />
+          {label}
+        </button>
+      ))}
+
+      <hr className="sidebar-divider" />
+      <span className="sidebar-section">Aksi</span>
+      <button onClick={() => { setIsExportOpen(true); setSidebarOpen(false); }} className="nav-item">
+        <Share2 size={16} /> Bagikan / Export
+      </button>
+
+      {/* Footer */}
+      <div className="sidebar-footer space-y-1">
+        <button onClick={() => navigate('profile')} className={`nav-item ${activePage === 'profile' ? 'active' : ''}`}>
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+            {initials}
+          </div>
+          <span className="flex-1 truncate text-sm">{displayName}</span>
+          <ChevronRight size={13} className="text-slate-600" />
+        </button>
+        <button onClick={handleLogout} className="nav-item !text-red-400 hover:!bg-red-500/8 hover:!text-red-300">
+          <LogOut size={16} /> Keluar
+        </button>
+      </div>
+    </>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">💰</span>
-            </div>
-            <h1 className="text-xl md:text-2xl font-bold text-slate-900">
-              Keuanganku
-            </h1>
-          </div>
+    <div className="app-layout">
+      {/* ── Desktop Sidebar ── */}
+      <aside className="sidebar hidden md:flex flex-col">
+        <SidebarContent />
+      </aside>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-4">
-            <div className="text-sm text-slate-600">
-              👋 {user?.displayName || user?.email}
-            </div>
-            <Button
-              onClick={() => setShowProfile(!showProfile)}
-              variant="secondary"
-              size="sm"
-              className="gap-2"
-            >
-              <UserCircle size={16} /> Profil
-            </Button>
-            <Button
-              onClick={() => setIsExportOpen(true)}
-              variant="secondary"
-              size="sm"
-            >
-              📊 Bagikan
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="danger"
-              size="sm"
-              className="gap-2"
-            >
-              <LogOut size={16} /> Keluar
-            </Button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            {mobileMenuOpen ? (
-              <X size={24} className="text-slate-900" />
-            ) : (
-              <Menu size={24} className="text-slate-900" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white p-4 space-y-3">
-            <div className="text-sm text-slate-600 px-2 py-2">
-              👋 {user?.displayName || user?.email}
-            </div>
-            <Button
-              onClick={() => { setShowProfile(!showProfile); setMobileMenuOpen(false); }}
-              fullWidth
-              variant="secondary"
-              size="sm"
-              className="gap-2"
-            >
-              <UserCircle size={16} /> Profil
-            </Button>
-            <Button
-              onClick={() => {
-                setIsExportOpen(true);
-                setMobileMenuOpen(false);
-              }}
-              fullWidth
-              variant="secondary"
-              size="sm"
-            >
-              📊 Bagikan
-            </Button>
-            <Button
-              onClick={handleLogout}
-              fullWidth
-              variant="danger"
-              size="sm"
-              className="gap-2"
-            >
-              <LogOut size={16} /> Keluar
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Tab Bar */}
-      {!showProfile && (
-        <div className="bg-white border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 flex gap-1">
-            {(['dashboard', 'analytics'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {tab === 'dashboard' ? (
-                  <><span>📋</span> Dashboard</>
-                ) : (
-                  <><BarChart3 size={16} /> Analisis</>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* ── Mobile Sidebar Overlay ── */}
+      {sidebarOpen && (
+        <>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+            onClick={() => setSidebarOpen(false)} />
+          <aside className="sidebar flex flex-col md:hidden animate-fade-up" style={{ transform: 'none' }}>
+            <button onClick={() => setSidebarOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/8 text-slate-400">
+              <X size={18} />
+            </button>
+            <SidebarContent />
+          </aside>
+        </>
       )}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        {showProfile ? (
-          <ProfilePage />
-        ) : activeTab === 'analytics' ? (
-          <Analytics transactions={filteredTransactions} />
-        ) : (
-          <>
-        {/* Summary Cards */}
-        <Summary transactions={filteredTransactions} dateLabel={getDateRangeLabel()} />
-
-        {/* Quick Stats */}
-        <QuickStats transactions={filteredTransactions} />
-
-        {/* Date Range Filter */}
-        <div className="card mb-6">
-          <DateRangeFilter
-            selectedRange={selectedRange}
-            onRangeChange={handleDateRangeChange}
-          />
-        </div>
-
-        {/* Action Button */}
-        <div className="flex gap-3 mb-6">
-          <button
-            onClick={() => setIsFormOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
-          >
-            <Plus size={18} /> Tambah Transaksi
+      {/* ── Main Content ── */}
+      <div className="main-content md:ml-[240px] ml-0 flex flex-col min-h-dvh">
+        {/* Mobile topbar */}
+        <header className="topbar md:hidden">
+          <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl hover:bg-white/6 text-slate-400 transition-colors">
+            <Menu size={20} />
           </button>
-        </div>
+          <div className="flex items-center gap-2">
+            <div className="sidebar-logo-icon w-8 h-8 rounded-xl text-base">💰</div>
+            <span className="font-bold text-sm text-gradient-brand">Keuanganku</span>
+          </div>
+          <button onClick={() => { setIsFormOpen(true); }}
+            className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-950/50">
+            <Plus size={18} className="text-white" />
+          </button>
+        </header>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
+        {/* Page content */}
+        <main className="flex-1 px-4 sm:px-6 py-6 sm:py-8 max-w-5xl w-full mx-auto mobile-pb md:pb-8">
+          {activePage === 'profile' ? (
+            <ProfilePage />
+          ) : activePage === 'analytics' ? (
+            <Analytics transactions={filteredTransactions} />
+          ) : (
+            <div className="space-y-5 animate-fade-up">
+              {/* Page header */}
+              <div className="page-header flex items-start justify-between">
+                <div>
+                  <h1 className="page-title">Dashboard</h1>
+                  <p className="page-subtitle">Selamat datang, <span className="text-violet-400 font-medium">{displayName.split(' ')[0]}</span> 👋</p>
+                </div>
+                <button
+                  onClick={() => setIsFormOpen(true)}
+                  className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white
+                    bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+                    shadow-lg shadow-violet-950/50 transition-all duration-200 border border-violet-500/30"
+                >
+                  <Plus size={16} /> Tambah Transaksi
+                </button>
+              </div>
 
-        {/* Transaction List */}
-        {loading && !transactions.length ? (
-          <div className="card text-center py-12">
-            <p className="text-slate-600 mb-2">Memuat data...</p>
-            <div className="animate-spin h-8 w-8 border-4 border-slate-300 border-t-blue-500 rounded-full mx-auto"></div>
-          </div>
-        ) : (
-          <div className="card">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">
-              Daftar Transaksi
-            </h2>
-            <TransactionList
-              transactions={filteredTransactions}
-              onEdit={handleEdit}
-              onDelete={deleteTransaction}
-              loading={loading}
-            />
-          </div>
-        )}
-        </>
-        )}
+              <Summary transactions={filteredTransactions} dateLabel={dateLabel} />
+              <QuickStats transactions={filteredTransactions} />
+
+              {/* Filter */}
+              <div className="card">
+                <DateRangeFilter selectedRange={selectedRange} onRangeChange={handleDateRangeChange} />
+              </div>
+
+              {/* Mobile add button */}
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="md:hidden w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold text-white text-sm
+                  bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+                  shadow-lg shadow-violet-950/50 transition-all duration-200 border border-violet-500/30"
+              >
+                <Plus size={16} /> Tambah Transaksi
+              </button>
+
+              {error && (
+                <div className="bg-red-500/8 border border-red-500/22 text-red-400 px-4 py-3 rounded-xl text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Transaction list */}
+              <div className="card">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-violet-500/12 border border-violet-500/20 flex items-center justify-center">
+                      <Wallet size={14} className="text-violet-400" />
+                    </div>
+                    <h2 className="font-bold text-slate-200">Daftar Transaksi</h2>
+                  </div>
+                  <span className="text-xs text-slate-500 bg-white/4 px-2.5 py-1 rounded-full border border-white/06">
+                    {filteredTransactions.length} transaksi
+                  </span>
+                </div>
+                {loading && !transactions.length ? (
+                  <div className="space-y-3 py-2">
+                    {[...Array(4)].map((_, i) => <div key={i} className="skeleton h-16 rounded-xl" />)}
+                  </div>
+                ) : (
+                  <TransactionList transactions={filteredTransactions} onEdit={handleEdit} onDelete={deleteTransaction} loading={loading} />
+                )}
+              </div>
+            </div>
+          )}
+        </main>
       </div>
+
+      {/* ── Mobile Bottom Nav ── */}
+      <nav className="bottom-nav md:hidden">
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => navigate(id)} className={`bottom-nav-item ${activePage === id ? 'active' : ''}`}>
+            <Icon size={20} />
+            {label}
+          </button>
+        ))}
+        <button onClick={() => setIsExportOpen(true)} className={`bottom-nav-item`}>
+          <Share2 size={20} />
+          Bagikan
+        </button>
+        <button onClick={() => navigate('profile')} className={`bottom-nav-item ${activePage === 'profile' ? 'active' : ''}`}>
+          <UserCircle size={20} />
+          Profil
+        </button>
+      </nav>
 
       {/* Modals */}
       <TransactionForm
         open={isFormOpen}
-        onOpenChange={(open) => {
-          setIsFormOpen(open);
-          if (!open) setEditingTransaction(undefined);
-        }}
+        onOpenChange={(open) => { setIsFormOpen(open); if (!open) setEditingTransaction(undefined); }}
         onSubmit={handleAddTransaction}
         initialData={editingTransaction}
         loading={loading}
       />
-
       <ExportShare
         open={isExportOpen}
         onOpenChange={setIsExportOpen}
@@ -306,16 +262,6 @@ export const Dashboard = () => {
         dateRange={selectedRange}
         userCity={profile.city || 'Sukabumi'}
       />
-
-      {/* Floating Action Button for Mobile */}
-      {!showProfile && (
-        <button
-          onClick={() => setIsFormOpen(true)}
-          className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
-        >
-          <Plus size={24} />
-        </button>
-      )}
     </div>
   );
 };

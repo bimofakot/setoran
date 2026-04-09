@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { Transaction } from '../types';
 import { formatCurrency } from '../utils/helpers';
 import { TrendingUp, PieChart, BarChart3 } from 'lucide-react';
@@ -169,7 +169,7 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
                     );
                     acc.angle = endAngle;
                     return acc;
-                  }, { angle: -90, paths: [] as JSX.Element[] }).paths}
+                  }, { angle: -90, paths: [] as React.ReactElement[] }).paths}
                 </svg>
               </div>
               <div className="space-y-2">

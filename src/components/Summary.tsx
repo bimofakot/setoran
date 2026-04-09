@@ -1,6 +1,6 @@
 import type { Transaction } from '../types';
 import { formatCurrency } from '../utils/helpers';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Zap, Target, Activity } from 'lucide-react';
 
 interface SummaryProps {
   transactions: Transaction[];
@@ -8,138 +8,112 @@ interface SummaryProps {
 }
 
 export const Summary = ({ transactions, dateLabel }: SummaryProps) => {
-  const income = transactions
-    .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const expense = transactions
-    .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-
+  const income  = transactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expense = transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const balance = income - expense;
+  const savingRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 w-full">
-      {/* Income Card */}
-      <div className="card bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500 rounded-2xl shadow-sm hover:scale-[1.02] transition-all">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-green-700 font-medium mb-1">Pemasukan</p>
-            <p className="text-2xl font-bold text-green-600 md:text-3xl">
-              {formatCurrency(income)}
-            </p>
-            <p className="text-xs text-green-600 mt-2">{dateLabel}</p>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Income */}
+      <div className="stat-card stat-card-income">
+        <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-emerald-500/6 blur-2xl pointer-events-none" />
+        <div className="flex items-start justify-between mb-4">
+          <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/18">
+            <TrendingUp size={18} className="text-emerald-400" />
           </div>
-          <div className="p-3 bg-green-200 rounded-full">
-            <TrendingUp size={24} className="text-green-600" />
+          <span className="badge-income"><ArrowUpRight size={10} /> {dateLabel}</span>
+        </div>
+        <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider font-semibold">Pemasukan</p>
+        <p className="text-2xl font-bold text-emerald-400 tracking-tight">{formatCurrency(income)}</p>
+        <div className="flex items-center gap-1.5 mt-2.5">
+          <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-700"
+              style={{ width: income > 0 ? '100%' : '0%' }} />
           </div>
+          <span className="text-xs text-slate-600">{transactions.filter(t => t.type === 'income').length}×</span>
         </div>
       </div>
 
-      {/* Expense Card */}
-      <div className="card bg-gradient-to-br from-red-50 to-red-100 border-l-4 border-red-500 rounded-2xl shadow-sm hover:scale-[1.02] transition-all">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-red-700 font-medium mb-1">Pengeluaran</p>
-            <p className="text-2xl font-bold text-red-600 md:text-3xl">
-              {formatCurrency(expense)}
-            </p>
-            <p className="text-xs text-red-600 mt-2">{dateLabel}</p>
+      {/* Expense */}
+      <div className="stat-card stat-card-expense">
+        <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-red-500/6 blur-2xl pointer-events-none" />
+        <div className="flex items-start justify-between mb-4">
+          <div className="p-2.5 bg-red-500/10 rounded-xl border border-red-500/18">
+            <TrendingDown size={18} className="text-red-400" />
           </div>
-          <div className="p-3 bg-red-200 rounded-full">
-            <TrendingDown size={24} className="text-red-600" />
+          <span className="badge-expense"><ArrowDownRight size={10} /> {dateLabel}</span>
+        </div>
+        <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider font-semibold">Pengeluaran</p>
+        <p className="text-2xl font-bold text-red-400 tracking-tight">{formatCurrency(expense)}</p>
+        <div className="flex items-center gap-1.5 mt-2.5">
+          <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+            {income > 0 && (
+              <div className="h-full bg-gradient-to-r from-red-500 to-rose-400 rounded-full transition-all duration-700"
+                style={{ width: `${Math.min((expense / income) * 100, 100)}%` }} />
+            )}
           </div>
+          <span className="text-xs text-slate-600">{transactions.filter(t => t.type === 'expense').length}×</span>
         </div>
       </div>
 
-      {/* Balance Card */}
-      <div className={`card bg-gradient-to-br border-l-4 col-span-1 sm:col-span-2 lg:col-span-1 rounded-2xl shadow-sm hover:scale-[1.02] transition-all ${
-        balance >= 0
-          ? 'from-blue-50 to-blue-100 border-blue-500'
-          : 'from-yellow-50 to-yellow-100 border-yellow-500'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className={`text-sm font-medium mb-1 ${
-              balance >= 0 ? 'text-blue-700' : 'text-yellow-700'
-            }`}>
-              Saldo
-            </p>
-            <p className={`text-2xl font-bold md:text-3xl ${
-              balance >= 0 ? 'text-blue-600' : 'text-yellow-600'
-            }`}>
-              {formatCurrency(balance)}
-            </p>
-            <p className={`text-xs mt-2 ${
-              balance >= 0 ? 'text-blue-600' : 'text-yellow-600'
-            }`}>{dateLabel}</p>
+      {/* Balance */}
+      <div className="stat-card stat-card-balance">
+        <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-violet-500/6 blur-2xl pointer-events-none" />
+        <div className="flex items-start justify-between mb-4">
+          <div className={`p-2.5 rounded-xl border ${balance >= 0 ? 'bg-violet-500/10 border-violet-500/18' : 'bg-amber-500/10 border-amber-500/18'}`}>
+            <Wallet size={18} className={balance >= 0 ? 'text-violet-400' : 'text-amber-400'} />
           </div>
-          <div className={`p-3 rounded-full ${
-            balance >= 0 ? 'bg-blue-200' : 'bg-yellow-200'
-          }`}>
-            <Wallet size={24} className={balance >= 0 ? 'text-blue-600' : 'text-yellow-600'} />
+          {income > 0 && (
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+              savingRate >= 0
+                ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+            }`}>
+              {savingRate}% hemat
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider font-semibold">Saldo Bersih</p>
+        <p className={`text-2xl font-bold tracking-tight ${balance >= 0 ? 'text-gradient' : 'text-amber-400'}`}>
+          {formatCurrency(balance)}
+        </p>
+        <div className="flex items-center gap-1.5 mt-2.5">
+          <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-700 ${balance >= 0 ? 'bg-gradient-to-r from-violet-500 to-indigo-400' : 'bg-gradient-to-r from-amber-500 to-orange-400'}`}
+              style={{ width: income > 0 ? `${Math.max(Math.min(savingRate, 100), 0)}%` : '0%' }} />
           </div>
+          <span className="text-xs text-slate-600">{transactions.length} total</span>
         </div>
       </div>
     </div>
   );
 };
 
-interface WidgetProps {
-  transactions: Transaction[];
-}
+export const QuickStats = ({ transactions }: { transactions: Transaction[] }) => {
+  const income  = transactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expense = transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const avg = transactions.length > 0 ? (income + expense) / transactions.length : 0;
+  const largest = transactions.reduce((max, t) => t.amount > max ? t.amount : max, 0);
 
-export const QuickStats = ({ transactions }: WidgetProps) => {
-  const totalIncome = transactions
-    .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalExpense = transactions
-    .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const balance = totalIncome - totalExpense;
-
-  const incomeCount = transactions.filter((t) => t.type === 'income').length;
-  const expenseCount = transactions.filter((t) => t.type === 'expense').length;
+  const stats = [
+    { label: 'Rata-rata/Transaksi', value: formatCurrency(avg), color: 'text-slate-200', icon: <Activity size={13} className="text-slate-500" /> },
+    { label: 'Transaksi Terbesar',  value: formatCurrency(largest), color: 'text-violet-400', icon: <Zap size={13} className="text-violet-400" /> },
+    { label: 'Total Transaksi',     value: `${transactions.length}×`, color: 'text-slate-200', icon: <Target size={13} className="text-slate-500" /> },
+    { label: 'Rasio Hemat',
+      value: income > 0 ? `${Math.round(((income-expense)/income)*100)}%` : '—',
+      color: income >= expense ? 'text-emerald-400' : 'text-red-400',
+      icon: <TrendingUp size={13} className={income >= expense ? 'text-emerald-400' : 'text-red-400'} /> },
+  ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-      <div className="card text-center">
-        <p className="text-xs text-slate-600 font-medium">Total Pemasukan</p>
-        <p className="text-lg font-bold text-green-600 md:text-xl">
-          {formatCurrency(totalIncome)}
-        </p>
-        <p className="text-xs text-slate-500">{incomeCount} transaksi</p>
-      </div>
-
-      <div className="card text-center">
-        <p className="text-xs text-slate-600 font-medium">Total Pengeluaran</p>
-        <p className="text-lg font-bold text-red-600 md:text-xl">
-          {formatCurrency(totalExpense)}
-        </p>
-        <p className="text-xs text-slate-500">{expenseCount} transaksi</p>
-      </div>
-
-      <div className="card text-center">
-        <p className="text-xs text-slate-600 font-medium">Total Saldo</p>
-        <p className={`text-lg font-bold md:text-xl ${
-          balance >= 0 ? 'text-blue-600' : 'text-yellow-600'
-        }`}>
-          {formatCurrency(balance)}
-        </p>
-        <p className="text-xs text-slate-500">Total</p>
-      </div>
-
-      <div className="card text-center">
-        <p className="text-xs text-slate-600 font-medium">Rata-rata Harian</p>
-        <p className="text-lg font-bold text-slate-700 md:text-xl">
-          {formatCurrency(
-            transactions.length > 0 ? balance / transactions.length : 0
-          )}
-        </p>
-        <p className="text-xs text-slate-500">Per transaksi</p>
-      </div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {stats.map((s) => (
+        <div key={s.label} className="card-sm group cursor-default">
+          <p className="text-xs text-slate-500 mb-2 flex items-center gap-1.5">{s.icon}{s.label}</p>
+          <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+        </div>
+      ))}
     </div>
   );
 };

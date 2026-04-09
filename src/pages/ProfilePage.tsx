@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useProfile } from '../hooks/useProfile';
 import { useCategories } from '../hooks/useCategories';
 import { Button } from '../components/ui';
-import { User, MapPin, AtSign, Save, Plus, Trash2, Tag } from 'lucide-react';
+import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2 } from 'lucide-react';
 
 export const ProfilePage = () => {
   const { profile, loading, saving, saveProfile } = useProfile();
@@ -34,32 +34,37 @@ export const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin h-8 w-8 border-4 border-slate-300 border-t-blue-500 rounded-full" />
+      <div className="flex items-center justify-center py-24">
+        <div className="animate-spin h-8 w-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full" />
       </div>
     );
   }
 
-  const incomeCategories = categories.filter((c) => c.type === 'income');
+  const incomeCategories  = categories.filter((c) => c.type === 'income');
   const expenseCategories = categories.filter((c) => c.type === 'expense');
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-2xl mx-auto space-y-5">
       {/* Profile Form */}
-      <div>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-            <User size={20} className="text-white" />
+      <div className="card">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-950/50">
+            <User size={18} className="text-white" />
           </div>
-          <h1 className="text-xl font-bold text-slate-900">Profil — Keuanganku</h1>
-        </div>
-        <form onSubmit={handleSubmit} className="card space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+            <h1 className="font-semibold text-slate-100">Profil Saya</h1>
+            <p className="text-xs text-slate-500">Kelola informasi akun Anda</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Nama */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Nama Lengkap</label>
             <div className="relative">
-              <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
-                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-dark pl-9"
                 value={form.displayName}
                 onChange={(e) => setForm({ ...form, displayName: e.target.value })}
                 placeholder="Nama lengkap Anda"
@@ -67,109 +72,105 @@ export const ProfilePage = () => {
               />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+
+          {/* Username */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Username</label>
             <div className="relative">
-              <AtSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
-                value={form.username}
-                readOnly
-              />
+              <AtSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input className="input-dark pl-9" value={form.username} readOnly />
             </div>
-            <p className="text-xs text-slate-400 mt-1">Username tidak dapat diubah setelah registrasi.</p>
+            <p className="text-xs text-slate-600">Username tidak dapat diubah setelah registrasi.</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Kota Domisili</label>
+
+          {/* Kota */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Kota Domisili</label>
             <div className="relative">
-              <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
-                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-dark pl-9"
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
                 placeholder="Contoh: Sukabumi"
               />
             </div>
-            <p className="text-xs text-slate-400 mt-1">Digunakan pada tanda tangan laporan PDF.</p>
+            <p className="text-xs text-slate-600">Digunakan pada tanda tangan laporan PDF.</p>
           </div>
-          <Button type="submit" fullWidth className="gap-2 justify-center" disabled={saving}>
-            {saving ? (
-              <span className="flex items-center gap-2">
-                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                Menyimpan...
-              </span>
-            ) : saved ? '✅ Tersimpan!' : <><Save size={16} /> Simpan Perubahan</>}
+
+          <Button type="submit" fullWidth disabled={saving}>
+            {saving
+              ? <><span className="animate-spin h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full" /> Menyimpan...</>
+              : saved
+              ? <><CheckCircle2 size={15} /> Tersimpan!</>
+              : <><Save size={15} /> Simpan Perubahan</>}
           </Button>
         </form>
       </div>
 
       {/* Category Management */}
-      <div>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <Tag size={20} className="text-white" />
+      <div className="card">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-950/50">
+            <Tag size={18} className="text-white" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">Kelola Kategori</h2>
+          <div>
+            <h2 className="font-semibold text-slate-100">Kelola Kategori</h2>
+            <p className="text-xs text-slate-500">Tambah atau hapus kategori transaksi</p>
+          </div>
         </div>
 
-        {/* Add Category Form */}
-        <form onSubmit={handleAddCat} className="card mb-4">
-          <p className="text-sm font-medium text-slate-700 mb-3">Tambah Kategori Baru</p>
-          <div className="flex gap-2">
+        {/* Add form */}
+        <form onSubmit={handleAddCat} className="mb-5 p-4 bg-white/3 rounded-xl border border-white/07">
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">Tambah Kategori Baru</p>
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
             <div className="flex gap-1 shrink-0">
               {(['expense', 'income'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setNewCat({ ...newCat, type: t })}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                <button key={t} type="button" onClick={() => setNewCat({ ...newCat, type: t })}
+                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
                     newCat.type === t
-                      ? t === 'expense' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                      : 'bg-slate-200 text-slate-600'
-                  }`}
-                >
+                      ? t === 'expense'
+                        ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                        : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                      : 'bg-transparent text-slate-500 border-white/08 hover:border-white/15'
+                  }`}>
                   {t === 'expense' ? 'Pengeluaran' : 'Pemasukan'}
                 </button>
               ))}
             </div>
             <input
-              className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-dark flex-1 min-w-0"
               value={newCat.name}
               onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
               placeholder="Nama kategori..."
               required
             />
-            <Button type="submit" size="sm" className="gap-1 shrink-0" disabled={addingCat}>
-              <Plus size={16} /> Tambah
+            <Button type="submit" size="sm" className="shrink-0" disabled={addingCat}>
+              <Plus size={14} /> Tambah
             </Button>
           </div>
         </form>
 
-        {/* Category Lists */}
+        {/* Lists */}
         <div className="grid md:grid-cols-2 gap-4">
           {[
-            { label: '💰 Pemasukan', list: incomeCategories, color: 'text-green-600' },
-            { label: '💸 Pengeluaran', list: expenseCategories, color: 'text-red-600' },
-          ].map(({ label, list, color }) => (
-            <div key={label} className="card">
-              <p className={`text-sm font-semibold mb-3 ${color}`}>{label}</p>
-              <div className="space-y-1 max-h-64 overflow-y-auto">
+            { label: '💰 Pemasukan', list: incomeCategories, accent: 'text-emerald-400' },
+            { label: '💸 Pengeluaran', list: expenseCategories, accent: 'text-red-400' },
+          ].map(({ label, list, accent }) => (
+            <div key={label} className="bg-white/3 rounded-xl border border-white/07 p-4">
+              <p className={`text-xs font-semibold mb-3 uppercase tracking-wider ${accent}`}>{label}</p>
+              <div className="space-y-0.5 max-h-56 overflow-y-auto">
                 {list.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-4">Belum ada kategori</p>
-                ) : (
-                  list.map((cat) => (
-                    <div key={cat.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-slate-50 group">
-                      <span className="text-sm text-slate-700">{cat.name}</span>
-                      <button
-                        onClick={() => removeCategory(cat.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all"
-                        title="Hapus kategori"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))
-                )}
+                  <p className="text-xs text-slate-600 text-center py-4">Belum ada kategori</p>
+                ) : list.map((cat) => (
+                  <div key={cat.id} className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-white/5 group transition-colors">
+                    <span className="text-sm text-slate-300">{cat.name}</span>
+                    <button onClick={() => removeCategory(cat.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-red-500/10">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
