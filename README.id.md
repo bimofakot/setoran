@@ -22,6 +22,7 @@ Aplikasi web keuangan pribadi premium untuk mencatat pemasukan dan pengeluaran h
 - **Soft-delete** — transaksi yang dihapus ditandai `isDeleted: true`, tidak pernah dihapus permanen
 - **Firebase Auth** — login dengan email atau username; registrasi memerlukan username alfanumerik unik
 - **Kategori kustom** — CRUD kategori per-user, di-seed dengan default cerdas saat pertama daftar
+- **Secret-safe** — `.env.local`, service account key, dan cache Firebase dikecualikan dari version control via `.gitignore` komprehensif
 
 #### Mengapa Kategori Disimpan Per-Dokumen?
 

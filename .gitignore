@@ -1,40 +1,84 @@
-# Logs
-logs
+# ── Dependencies ──────────────────────────────────────────────
+node_modules
+.pnp
+.pnp.*
+.yarn/install-state.gz
+
+# ── Build outputs ─────────────────────────────────────────────
+dist
+dist-ssr
+build
+out
+.next
+.turbo
+.vite
+
+# ── Environment variables (NEVER commit real secrets) ─────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+*.env
+
+# ── Logs ──────────────────────────────────────────────────────
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+firestore.debug.log
+firebase-debug.log
+ui-debug.log
 
-node_modules
-dist
-dist-ssr
-*.local
+# ── Firebase ──────────────────────────────────────────────────
+.firebase/
+.firebaserc.local
 
-# Environment variables
-.env
-.env.local
-.env.*.local
+# ── Service account / credentials (critical) ──────────────────
+serviceAccount*.json
+*-service-account*.json
+*credentials*.json
+*secret*.json
 
-# IDE specific files
+# ── Cache & temp ──────────────────────────────────────────────
+.cache/
+*.cache
+*.tmp
+*.temp
+*.pid
+*.seed
+*.swp
+*.swo
+
+# ── OS generated ──────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+*~
+
+# ── IDE / Editor ──────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Firebase
-.firebase
+# ── Testing ───────────────────────────────────────────────────
+coverage/
+.nyc_output/
 
-# Build outputs
-build
-.next
-out
-.turbo
-.vite
-
+# ── Misc ──────────────────────────────────────────────────────
+*.local
+.eslintcache
+.stylelintcache

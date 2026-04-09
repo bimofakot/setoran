@@ -22,6 +22,7 @@ A premium personal finance web app for tracking daily income and expenses. Built
 - **Soft-delete** — deleted transactions flagged `isDeleted: true`, never permanently removed
 - **Firebase Auth** — login with email or username; registration enforces unique alphanumeric username
 - **Custom categories** — per-user CRUD categories seeded with smart defaults on signup
+- **Secret-safe** — `.env.local`, service account keys, and Firebase cache excluded from version control via comprehensive `.gitignore`
 
 ### 📱 Progressive Web App (PWA)
 - **Installable on Android** — "Add to Home Screen" prompt via browser
