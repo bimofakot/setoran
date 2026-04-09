@@ -7,10 +7,11 @@ export interface UserProfile {
   displayName: string;
   username: string;
   city: string;
+  avatarId: string;
 }
 
 export const useProfile = () => {
-  const [profile, setProfile] = useState<UserProfile>({ displayName: '', username: '', city: '' });
+  const [profile, setProfile] = useState<UserProfile>({ displayName: '', username: '', city: '', avatarId: 'slate-minimal' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -24,6 +25,7 @@ export const useProfile = () => {
           displayName: d.fullName || auth.currentUser?.displayName || '',
           username: d.username || '',
           city: d.city || '',
+          avatarId: d.avatarId || 'slate-minimal',
         });
       }
       setLoading(false);
@@ -34,7 +36,11 @@ export const useProfile = () => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
     setSaving(true);
-    await setDoc(doc(db, 'users', uid), { fullName: data.displayName, city: data.city }, { merge: true });
+    await setDoc(doc(db, 'users', uid), {
+      fullName: data.displayName,
+      city: data.city,
+      avatarId: data.avatarId,
+    }, { merge: true });
     if (auth.currentUser) await updateProfile(auth.currentUser, { displayName: data.displayName });
     setProfile(data);
     setSaving(false);

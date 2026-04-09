@@ -123,14 +123,20 @@ export const TransactionList = ({ transactions, onEdit, onDelete }: TransactionL
                         </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                      {/* Actions — always visible on mobile, hover on desktop */}
+                      <div className="flex gap-0.5 ml-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button onClick={() => onEdit(t)}
-                          className="p-1.5 rounded-lg hover:bg-violet-500/12 text-slate-600 hover:text-violet-400 transition-colors">
+                          className="p-1.5 rounded-lg transition-colors"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(124,58,237,0.1)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent-light)'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}>
                           <Edit2 size={13} />
                         </button>
                         <button onClick={() => handleDelete(t.id)} disabled={deletingId === t.id}
-                          className="p-1.5 rounded-lg hover:bg-red-500/12 text-slate-600 hover:text-red-400 transition-colors disabled:opacity-40">
+                          className="p-1.5 rounded-lg transition-colors disabled:opacity-40"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; (e.currentTarget as HTMLElement).style.color = 'var(--red-light)'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; }}>
                           <Trash2 size={13} />
                         </button>
                       </div>
