@@ -308,7 +308,7 @@ ${name}`
         </header>
 
         {/* Page content */}
-        <main className="flex-1 px-4 sm:px-6 py-6 sm:py-8 max-w-5xl w-full mx-auto mobile-pb md:pb-8">
+        <main className="flex-1 px-4 sm:px-6 py-6 sm:py-8 max-w-5xl w-full mx-auto mobile-pb">
           {activePage === 'profile' ? (
             <ProfilePage />
           ) : activePage === 'analytics' ? (
