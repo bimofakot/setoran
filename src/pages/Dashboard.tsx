@@ -83,7 +83,7 @@ const AvatarIcon = ({ avatarId, initials }: { avatarId: string; initials: string
 export const Dashboard = () => {
   const { user, logout } = useAuth();
   const { profile } = useProfile();
-  const { transactions, loading, error, fetchTransactions, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
+  const { transactions, loading, error, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -96,8 +96,6 @@ export const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showContactMenu, setShowContactMenu] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-
-  useEffect(() => { fetchTransactions(); }, []);
 
   useEffect(() => {
     if (selectedRange === 'custom' && customRange) {
@@ -218,7 +216,7 @@ export const Dashboard = () => {
         <>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-fade-in"
             onClick={() => setSidebarOpen(false)} />
-          <aside className="sidebar flex flex-col md:hidden" style={{ transform: 'none' }}>
+          <aside className="sidebar fixed top-0 left-0 h-full flex flex-col md:hidden z-50" style={{ transform: 'none' }}>
             <button onClick={() => setSidebarOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[var(--bg-subtle-hover)]"
               style={{ color: 'var(--text-muted)' }}>
@@ -253,11 +251,19 @@ export const Dashboard = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 px-4 sm:px-6 py-6 sm:py-8 max-w-5xl w-full mx-auto mobile-pb">
+        <main className="flex-1 px-3 sm:px-5 lg:px-8 py-5 sm:py-7 max-w-5xl w-full mx-auto mobile-pb">
           {activePage === 'profile' ? (
             <ProfilePage />
           ) : activePage === 'analytics' ? (
-            <Analytics transactions={filteredTransactions} />
+            <Analytics
+              transactions={transactions}
+              mode={selectedRange}
+              offset={periodOffset}
+              customRange={customRange}
+              onModeChange={(m) => handleDateRangeChange(m)}
+              onOffsetChange={setPeriodOffset}
+              onCustomRange={(start, end) => { setSelectedRange('custom'); setCustomRange({ start, end }); }}
+            />
           ) : (
             <div className="space-y-5 animate-fade-up">
               <div className="page-header flex items-start justify-between">

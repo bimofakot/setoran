@@ -88,7 +88,7 @@
 @layer components {
 
   /* ── Layout ── */
-  .app-layout { display: flex; min-height: 100dvh; }
+  .app-layout { display: flex; min-height: 100dvh; overflow-x: hidden; }
 
   /* ── Sidebar ── */
   .sidebar {
@@ -132,7 +132,17 @@
   .sidebar-footer { margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 
   /* ── Main content ── */
-  .main-content { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+  .main-content {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-width: 0;        /* prevent flex child overflow */
+    overflow-x: hidden;
+  }
+
+  /* ── Responsive: no sidebar on mobile ── */
+  @media (max-width: 767px) {
+    .main-content { margin-left: 0; }
+  }
 
   /* ── Topbar (mobile) ── */
   .topbar {
@@ -192,30 +202,36 @@
   .card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 1.25rem; padding: 1.5rem;
+    border-radius: 1.25rem;
+    padding: 1.25rem;
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     box-shadow: var(--shadow-card);
     transition: border-color 0.2s, box-shadow 0.2s, background 0.25s;
+    min-width: 0;
   }
+  @media (min-width: 640px) { .card { padding: 1.5rem; } }
   .card:hover { border-color: var(--border-hover); }
 
   .card-sm {
     background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 1rem; padding: 1rem 1.25rem;
+    border-radius: 1rem; padding: 0.875rem 1rem;
     backdrop-filter: blur(20px); box-shadow: var(--shadow-card);
     transition: border-color 0.2s, background 0.25s;
+    min-width: 0;
   }
+  @media (min-width: 640px) { .card-sm { padding: 1rem 1.25rem; } }
   .card-sm:hover { border-color: var(--border-hover); }
 
   /* ── Stat cards ── */
   .stat-card {
     background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 1.25rem; padding: 1.5rem;
+    border-radius: 1.25rem; padding: 1.125rem 1.25rem;
     backdrop-filter: blur(20px); position: relative; overflow: hidden;
     box-shadow: var(--shadow-card);
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.25s;
-    cursor: default;
+    cursor: default; min-width: 0;
   }
+  @media (min-width: 640px) { .stat-card { padding: 1.5rem; } }
   .stat-card:hover { transform: translateY(-2px); }
 
   .stat-card-income  { border-top: 2px solid rgba(16,185,129,0.5); }
@@ -286,6 +302,7 @@
     font-size: 0.8rem; font-weight: 500;
     border: 1px solid var(--border); background: transparent;
     color: var(--text-secondary); cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    flex-shrink: 0;
   }
   .filter-pill:hover { border-color: var(--border-hover); color: var(--text-primary); }
   .filter-pill.active {
@@ -294,6 +311,17 @@
   [data-theme="light"] .filter-pill.active {
     background: rgba(109,40,217,0.08); border-color: rgba(109,40,217,0.25); color: var(--accent);
   }
+
+  /* ── Pill row: scrollable on narrow screens ── */
+  .pill-row {
+    display: flex;
+    gap: 0.375rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px; /* prevent clipping box-shadow */
+  }
+  .pill-row::-webkit-scrollbar { display: none; }
 
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -338,16 +366,19 @@
   }
 
   /* ── Page header ── */
-  .page-header { margin-bottom: 1.75rem; }
-  .page-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); }
-  .page-subtitle { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; }
+  .page-header { margin-bottom: 1.25rem; }
+  @media (min-width: 640px) { .page-header { margin-bottom: 1.75rem; } }
+  .page-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); }
+  @media (min-width: 640px) { .page-title { font-size: 1.5rem; } }
+  .page-subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+  @media (min-width: 640px) { .page-subtitle { font-size: 0.875rem; } }
 
   /* ── Floating window ── */
   .floating-window {
     position: fixed;
     bottom: 5rem;
     left: calc(var(--sidebar-w) + 1rem);
-    width: 320px;
+    width: min(320px, calc(100vw - var(--sidebar-w) - 2rem));
     max-height: 70dvh;
     background: var(--bg-surface);
     border: 1px solid var(--border-hover);
@@ -359,10 +390,10 @@
     overflow: hidden;
     animation: floatIn 0.25s cubic-bezier(0.16,1,0.3,1) both;
   }
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     .floating-window {
-      left: 1rem;
-      right: 1rem;
+      left: 0.75rem;
+      right: 0.75rem;
       width: auto;
       bottom: 5rem;
     }

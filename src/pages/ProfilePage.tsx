@@ -13,10 +13,6 @@ const SUPPORT_WA  = '6285872194248';   // nomor WA admin (tanpa +)
 const SUPPORT_EMAIL = 'andraani30@gmail.com'; // email support
 // ────────────────────────────────────────────────────────────
 
-// Categories that cannot be deleted
-const LOCKED_CATEGORIES = ['Lainnya'];
-const isLocked = (name: string) => LOCKED_CATEGORIES.includes(name);
-
 const AvatarDisplay = ({ avatarId, size = 48 }: { avatarId: string; size?: number }) => {
   const avatar = getAvatarById(avatarId);
   return (
@@ -64,7 +60,6 @@ export const ProfilePage = () => {
   };
 
   const handleDeleteCategory = (id: string, name: string) => {
-    if (isLocked(name)) return;
     if (!confirm(`Hapus kategori "${name}"?\n\nData yang sudah dihapus tidak bisa dipulihkan dan akan dihapus permanen dari database.`)) return;
     removeCategory(id);
   };
@@ -271,7 +266,7 @@ ${name}`
           </div>
         </form>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {[
             { label: '💰 Pemasukan', list: incomeCategories, accent: 'text-emerald-500' },
             { label: '💸 Pengeluaran', list: expenseCategories, accent: 'text-red-500' },
@@ -286,19 +281,15 @@ ${name}`
                     style={{ background: 'transparent' }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <div className="flex items-center gap-2">
-                      {isLocked(cat.name) && <Lock size={10} style={{ color: 'var(--text-muted)' }} />}
-                      <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{cat.name}</span>
-                    </div>
+                    <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{cat.name}</span>
                     <button
                       onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                      disabled={isLocked(cat.name)}
                       className="p-1.5 rounded-lg transition-colors"
-                      style={{ color: isLocked(cat.name) ? 'var(--text-muted)' : 'var(--red-light)', opacity: isLocked(cat.name) ? 0.3 : 1, cursor: isLocked(cat.name) ? 'not-allowed' : 'pointer' }}
-                      title={isLocked(cat.name) ? 'Kategori ini dikunci' : `Hapus ${cat.name}`}
-                      onMouseEnter={e => { if (!isLocked(cat.name)) (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
+                      style={{ color: 'var(--red-light)' }}
+                      title={`Hapus ${cat.name}`}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
-                      {isLocked(cat.name) ? <Lock size={13} /> : <Trash2 size={13} />}
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 ))}

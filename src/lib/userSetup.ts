@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, getDocs, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from './firebase';
 
 const DEFAULT_CATEGORIES = [
@@ -52,24 +52,12 @@ export const getEmailByUsername = async (username: string): Promise<string | nul
   return snap.docs[0].data().email as string;
 };
 
+// Seed hanya jika koleksi benar-benar kosong — tidak mengunci atau memaksa kategori yang sudah ada.
 export const initUserCategories = async (userId: string) => {
   const categoriesRef = collection(db, 'users', userId, 'categories');
   const snapshot = await getDocs(categoriesRef);
-
-  const seen = new Map<string, string>();
-  for (const d of snapshot.docs) {
-    const name = d.data().name as string;
-    if (seen.has(name)) {
-      await deleteDoc(doc(categoriesRef, d.id));
-    } else {
-      seen.set(name, d.id);
-    }
-  }
-
-  const existingNames = new Set(seen.keys());
+  if (!snapshot.empty) return; // sudah ada data, biarkan user mengelolanya sendiri
   await Promise.all(
-    DEFAULT_CATEGORIES
-      .filter((cat) => !existingNames.has(cat.name))
-      .map((cat) => setDoc(doc(categoriesRef), { name: cat.name, type: cat.type }))
+    DEFAULT_CATEGORIES.map((cat) => setDoc(doc(categoriesRef), { name: cat.name, type: cat.type }))
   );
 };

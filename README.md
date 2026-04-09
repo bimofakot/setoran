@@ -38,7 +38,27 @@ A premium personal finance web app for tracking daily income and expenses. Built
 - **Summary cards** — Income, Expense, Balance with progress bars and glow effects
 - **Quick stats** — Average per transaction, largest transaction, saving ratio
 - **Analytics tab** — Trend line chart, category pie chart, monthly comparison bars (pure SVG, no library)
-- **Time filters** — Today, this week, this month, this year, or custom date range
+- **Smart Period Navigator** — Harian/Mingguan/Bulanan/Tahunan with prev/next navigation, available on both Dashboard **and** Analytics page
+- **Custom date range** — pick any start–end date directly from the Analytics page
+
+### 📈 Smart Comparison
+- **Period-aware comparison** follows the active period:
+  - Daily mode → compares with yesterday
+  - Weekly mode → compares with last week
+  - Monthly mode → compares with last month
+  - Custom range → comparison disabled (no reference period)
+- **"Tampilkan Semua"** toggle shows daily + weekly + monthly comparison summary at once
+
+### ⚡ Real-time Sync
+- **onSnapshot listeners** — every transaction or category change reflects instantly, no refresh needed
+- **Cross-tab sync** — changes in one tab appear immediately in all other open tabs
+- **Auto cleanup** — listeners are properly unsubscribed on logout and unmount
+
+### 📐 Fully Responsive
+- **Adaptive breakpoints** — `sm` (≥640px), `md` (≥768px), `lg` (≥1024px)
+- **Scrollable filter pills** — horizontal scroll on narrow screens, no text clipping
+- **Dynamic grids** — stat cards, quick stats, and analytics auto-adjust column count
+- **Dynamic padding** — main content padding scales with screen size
 
 ### 📄 Professional PDF Reports
 - **Theme-synced** — PDF header and table colors match your active theme (violet dark or violet light)
@@ -135,17 +155,18 @@ service cloud.firestore {
 src/
 ├── components/
 │   ├── Analytics.tsx         # SVG charts (trend, pie, bar)
-│   ├── DateRangeFilter.tsx   # Period filter with custom range
+│   ├── DateRangeFilter.tsx   # (replaced by PeriodNavigator)
 │   ├── ExportShare.tsx       # PDF/Excel export & WA/copy share
+│   ├── PeriodNavigator.tsx   # Period nav with prev/next + Custom filter
 │   ├── Summary.tsx           # Financial summary + quick stats cards
 │   ├── TransactionForm.tsx   # Input form with Rupiah masking
 │   ├── TransactionList.tsx   # Grouped list with category emoji
 │   └── ui.tsx                # Button, Input, Select, Dialog, Badge
 ├── hooks/
 │   ├── useAuth.ts            # Auth state + category seeding
-│   ├── useCategories.ts      # Category CRUD from Firestore
+│   ├── useCategories.ts      # Category CRUD from Firestore (onSnapshot)
 │   ├── useProfile.ts         # Profile read/write with avatarId
-│   └── useTransactions.ts    # Transaction CRUD (soft-delete)
+│   └── useTransactions.ts    # Transaction CRUD (soft-delete, onSnapshot)
 ├── lib/
 │   ├── avatars.ts            # 6 SVG avatar definitions
 │   ├── firebase.ts           # Firebase initialization
@@ -186,3 +207,40 @@ npm run lint       # Lint code
 ## 📝 License
 
 MIT — free to use for personal and commercial purposes.
+
+---
+
+## 🧠 Engineering Notes
+
+### Autoseed vs User Freedom — Balancing Seed Data with User Control
+
+**The Problem:** `initUserCategories` was called on every login via `onAuthStateChanged`. It would re-add any default categories the user had deleted, making it impossible to truly remove them.
+
+**The Solution:** Seed only runs when the categories collection is **completely empty**.
+
+```ts
+export const initUserCategories = async (userId: string) => {
+  const snapshot = await getDocs(categoriesRef);
+  if (!snapshot.empty) return; // only seed on first use
+  await Promise.all(DEFAULT_CATEGORIES.map(...));
+};
+```
+
+**The Principle:** Seed data is a *bootstrap* — it gives new users a useful starting point. After that, the data belongs entirely to the user. No category should be locked or forced back. If the user deletes everything, the seed runs again on next login as a safety net, giving a clean slate without removing user agency.
+
+### Real-time Sync with onSnapshot
+
+Both `useTransactions` and `useCategories` use Firestore `onSnapshot` listeners instead of one-shot `getDocs`. This means:
+- Any change (add/edit/delete) reflects instantly across all open tabs.
+- No manual `fetchTransactions()` calls needed after mutations.
+- Listeners are properly cleaned up on logout and unmount to prevent memory leaks.
+
+### Smart Comparison in Analytics
+
+The monthly comparison panel is now **period-aware**:
+- Daily mode → compares with yesterday
+- Weekly mode → compares with last week
+- Monthly mode → compares with last month
+- Custom range → comparison disabled (no reference period)
+
+A "Tampilkan Semua" toggle shows a summary of daily, weekly, and monthly comparisons simultaneously.

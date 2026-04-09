@@ -14,7 +14,7 @@ export const Summary = ({ transactions, dateLabel }: SummaryProps) => {
   const savingRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
       {/* Income */}
       <div className="stat-card stat-card-income">
         <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-emerald-500/6 blur-2xl pointer-events-none" />
@@ -107,7 +107,7 @@ export const QuickStats = ({ transactions }: { transactions: Transaction[] }) =>
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
       {stats.map((s) => (
         <div key={s.label} className="card-sm group cursor-default">
           <p className="text-xs text-slate-500 mb-2 flex items-center gap-1.5">{s.icon}{s.label}</p>

@@ -1,5 +1,5 @@
 import type { DateRange } from '../types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarRange } from 'lucide-react';
 import { getDateRange } from '../utils/helpers';
 
 interface PeriodNavigatorProps {
@@ -7,6 +7,9 @@ interface PeriodNavigatorProps {
   offset: number;
   onModeChange: (mode: DateRange) => void;
   onOffsetChange: (offset: number) => void;
+  showCustom?: boolean;
+  onShowCustom?: () => void;
+  isCustomActive?: boolean;
 }
 
 const MODES: { value: DateRange; label: string }[] = [
@@ -17,9 +20,9 @@ const MODES: { value: DateRange; label: string }[] = [
 ];
 
 const formatPeriodLabel = (mode: DateRange, offset: number): string => {
+  if (mode === 'custom') return 'Rentang Custom';
   const { startDate, endDate } = getDateRange(mode, offset);
-  const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) =>
-    d.toLocaleDateString('id-ID', opts);
+  const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) => d.toLocaleDateString('id-ID', opts);
 
   if (mode === 'today') {
     if (offset === 0) return 'Hari Ini';
@@ -31,30 +34,36 @@ const formatPeriodLabel = (mode: DateRange, offset: number): string => {
     const e = fmt(endDate, { day: 'numeric', month: 'short', year: 'numeric' });
     return `${s} – ${e}`;
   }
-  if (mode === 'month') {
-    return fmt(startDate, { month: 'long', year: 'numeric' });
-  }
-  if (mode === 'year') {
-    return String(startDate.getFullYear());
-  }
+  if (mode === 'month') return fmt(startDate, { month: 'long', year: 'numeric' });
+  if (mode === 'year') return String(startDate.getFullYear());
   return '';
 };
 
-export const PeriodNavigator = ({ mode, offset, onModeChange, onOffsetChange }: PeriodNavigatorProps) => {
-  const isCustom = mode === 'custom';
+export const PeriodNavigator = ({
+  mode, offset, onModeChange, onOffsetChange,
+  showCustom = false, onShowCustom, isCustomActive = false,
+}: PeriodNavigatorProps) => {
+  const isCustom = isCustomActive;
   const isFuture = offset >= 0;
 
   return (
     <div className="space-y-3">
-      {/* Mode pills */}
-      <div className="flex gap-1.5 flex-wrap">
+      {/* Mode pills — scrollable on narrow screens */}
+      <div className="pill-row">
         {MODES.map(({ value, label }) => (
           <button key={value}
             onClick={() => { onModeChange(value); onOffsetChange(0); }}
-            className={`filter-pill ${mode === value ? 'active' : ''}`}>
+            className={`filter-pill ${!isCustom && mode === value ? 'active' : ''}`}>
             {label}
           </button>
         ))}
+        {showCustom && (
+          <button
+            onClick={onShowCustom}
+            className={`filter-pill flex items-center gap-1 ${isCustom ? 'active' : ''}`}>
+            <CalendarRange size={12} /> Custom
+          </button>
+        )}
       </div>
 
       {/* Prev / Label / Next */}

@@ -114,9 +114,9 @@ export const TransactionList = ({ transactions, onEdit, onDelete }: TransactionL
                     </div>
 
                     {/* Amount */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                       <div className="text-right">
-                        <p className={`text-sm font-bold ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <p className={`text-xs sm:text-sm font-bold ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
                           {t.type === 'income' ? '+' : '−'}{formatCurrency(t.amount)}
                         </p>
                         <div className={`flex items-center justify-end gap-0.5 mt-0.5 ${t.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
