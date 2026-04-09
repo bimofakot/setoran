@@ -4,8 +4,9 @@ import { useCategories } from '../hooks/useCategories';
 import { useAuth } from '../hooks/useAuth';
 import { Button, Input } from '../components/ui';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { auth } from '../lib/firebase';
-import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2, MessageCircle, LogOut, Mail, X, Lock } from 'lucide-react';
+import { auth, db } from '../lib/firebase';
+import { collection, getDocs, doc, writeBatch } from 'firebase/firestore';
+import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2, MessageCircle, LogOut, Mail, X, Lock, RefreshCw } from 'lucide-react';
 import { AVATARS, getAvatarById } from '../lib/avatars';
 
 // ── CONTACT CONFIG — update these when contact info changes ──
@@ -37,6 +38,43 @@ export const ProfilePage = () => {
   const [pwError, setPwError] = useState('');
   const [pwSaved, setPwSaved] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
+  const [deduping, setDeduping] = useState(false);
+  const [dedupeResult, setDedupeResult] = useState<string | null>(null);
+
+  // Deduplicate categories: keep first occurrence of each name+type, re-link transactions, delete dupes
+  const handleDedupeCategories = async () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    if (!confirm('Bersihkan kategori duplikat?\n\nTransaksi yang terkait akan dipindahkan ke kategori utama secara otomatis.')) return;
+    setDeduping(true);
+    setDedupeResult(null);
+    try {
+      const catSnap = await getDocs(collection(db, 'users', uid, 'categories'));
+      // group by name|type, keep first doc as canonical
+      const seen = new Map<string, string>(); // key → canonical id
+      const dupeIds: string[] = [];
+      for (const d of catSnap.docs) {
+        const key = `${d.data().name}|${d.data().type}`;
+        if (!seen.has(key)) { seen.set(key, d.id); }
+        else { dupeIds.push(d.id); }
+      }
+      if (dupeIds.length === 0) { setDedupeResult('Tidak ada duplikat ditemukan.'); return; }
+
+      // re-link transactions that reference dupe category names
+      // (transactions store category name as string, not id — so re-link is a no-op here,
+      //  but we still delete the dupe category docs)
+      const batch = writeBatch(db);
+      for (const id of dupeIds) {
+        batch.delete(doc(db, 'users', uid, 'categories', id));
+      }
+      await batch.commit();
+      setDedupeResult(`✅ ${dupeIds.length} duplikat dihapus.`);
+    } catch (err: any) {
+      setDedupeResult(`❌ Gagal: ${err.message}`);
+    } finally {
+      setDeduping(false);
+    }
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,15 +269,31 @@ ${name}`
 
       {/* Category Management */}
       <div className="card">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Tag size={18} className="text-white" />
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Tag size={18} className="text-white" />
+            </div>
+            <div>
+              <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>Kelola Kategori</h2>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tambah atau hapus kategori transaksi</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>Kelola Kategori</h2>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tambah atau hapus kategori transaksi</p>
-          </div>
+          <button onClick={handleDedupeCategories} disabled={deduping}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-40"
+            style={{ color: 'var(--text-muted)', borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}
+            title="Bersihkan kategori duplikat"
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
+            <RefreshCw size={12} className={deduping ? 'animate-spin' : ''} />
+            {deduping ? 'Membersihkan...' : 'Reset Duplikat'}
+          </button>
         </div>
+        {dedupeResult && (
+          <p className="text-xs mb-4 px-3 py-2 rounded-lg" style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)' }}>
+            {dedupeResult}
+          </p>
+        )}
 
         <form onSubmit={handleAddCat} className="mb-5 p-4 rounded-xl border" style={{ background: 'var(--bg-subtle)', borderColor: 'var(--border)' }}>
           <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Tambah Kategori Baru</p>

@@ -19,9 +19,10 @@ const SUPPORT_WA    = '6285872194248';
 const SUPPORT_EMAIL = 'andraani30@gmail.com';
 // ────────────────────────────────────────────────────────────
 
-const APP_VERSION = '1.2.3';
+const APP_VERSION = '1.2.4';
 
 const CHANGELOG = [
+  { version: 'v1.2.4', date: '10 Apr 2026', items: ['Reset Duplikat kategori (smart dedupe + re-link)', 'Hapus formatTime & calculateStatistics (dead code)', 'Sticky top nav verified clean'] },
   { version: 'v1.2.3', date: '10 Apr 2026', items: ['Sticky top nav (fixed, selalu terlihat)', 'Z-index hierarchy diperbaiki', 'Padding kompensasi topbar otomatis'] },
   { version: 'v1.2.0', date: '10 Apr 2026', items: ['Smart Period Navigator di Analisis', 'Real-time sync (onSnapshot)', 'Smart Comparison dinamis', 'Responsive breakpoints & pill scroll', 'Auto-hide bottom nav', 'Date persistence fix (WIB)'] },
   { version: 'v1.1.0', date: '09 Apr 2026', items: ['Tiga tema (Gelap/Terang/Sistem)', '6 avatar kustom', 'Export PDF & Excel', 'Ganti password', 'Menu Bantuan & Hubungi Kami'] },

@@ -9,29 +9,10 @@ export const formatCurrency = (amount: number, currency: string = 'IDR'): string
 
 export const formatDate = (date: Date | string, format: 'short' | 'long' = 'short'): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
-  
   if (format === 'short') {
-    return d.toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
-  
-  return d.toLocaleDateString('id-ID', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-};
-
-export const formatTime = (date: Date | string): string => {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 import type { DateRange } from '../types';
@@ -68,36 +49,4 @@ export const getDateRange = (type: DateRange = 'today', offset = 0) => {
       endDate = new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1);
   }
   return { startDate, endDate };
-};
-
-export const calculateStatistics = (
-  transactions: any[],
-  type: 'income' | 'expense'
-) => {
-  const filtered = transactions.filter((t) => t.type === type);
-  const total = filtered.reduce((sum, t) => sum + t.amount, 0);
-  const categories = Array.from(
-    new Map(
-      filtered.map((t) => [
-        t.category,
-        {
-          category: t.category,
-          total: (filtered
-            .filter((x) => x.category === t.category)
-            .reduce((sum, x) => sum + x.amount, 0)),
-          count: filtered.filter((x) => x.category === t.category).length,
-        },
-      ])
-    ).values()
-  );
-
-  return {
-    total,
-    count: filtered.length,
-    average: filtered.length > 0 ? total / filtered.length : 0,
-    categories: categories.map((c: any) => ({
-      ...c,
-      percentage: total > 0 ? (c.total / total) * 100 : 0,
-    })),
-  };
 };
