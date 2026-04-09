@@ -7,6 +7,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { initUserCategories } from '../lib/userSetup';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,6 +27,7 @@ export const useAuth = () => {
     try {
       setError(null);
       const result = await createUserWithEmailAndPassword(auth, email, password);
+      await initUserCategories(result.user.uid);
       return result.user;
     } catch (err: any) {
       const errorMessage = err.message || 'Error signing up';

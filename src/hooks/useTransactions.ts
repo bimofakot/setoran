@@ -3,7 +3,6 @@ import {
   collection,
   addDoc,
   updateDoc,
-  deleteDoc,
   doc,
   query,
   where,
@@ -19,26 +18,36 @@ export const useTransactions = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const user = auth.currentUser;
+  const txCollection = () => {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Tidak terautentikasi');
+    return collection(db, 'users', user.uid, 'transactions');
+  };
 
-  // Fetch transactions
+  const txDoc = (id: string) => {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Tidak terautentikasi');
+    return doc(db, 'users', user.uid, 'transactions', id);
+  };
+
   const fetchTransactions = async (startDate?: Date, endDate?: Date) => {
+    const user = auth.currentUser;
     if (!user) return;
-    
+
     try {
       setLoading(true);
       setError(null);
 
       let q = query(
-        collection(db, 'transactions'),
-        where('userId', '==', user.uid),
+        txCollection(),
+        where('isDeleted', '==', false),
         orderBy('date', 'desc')
       );
 
       if (startDate && endDate) {
         q = query(
-          collection(db, 'transactions'),
-          where('userId', '==', user.uid),
+          txCollection(),
+          where('isDeleted', '==', false),
           where('date', '>=', Timestamp.fromDate(startDate)),
           where('date', '<=', Timestamp.fromDate(endDate)),
           orderBy('date', 'desc')
@@ -66,15 +75,16 @@ export const useTransactions = () => {
     }
   };
 
-  // Add transaction
-  const addTransaction = async (transactionData: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addTransaction = async (
+    transactionData: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>
+  ) => {
+    const user = auth.currentUser;
     if (!user) return;
 
     try {
       setLoading(true);
       setError(null);
 
-      // Combine selected date with current time (hours, minutes, seconds)
       const selectedDate = new Date(transactionData.date);
       const now = new Date();
       const combinedDateTime = new Date(
@@ -87,12 +97,13 @@ export const useTransactions = () => {
         now.getMilliseconds()
       );
 
-      const docRef = await addDoc(collection(db, 'transactions'), {
+      const docRef = await addDoc(txCollection(), {
         ...transactionData,
         userId: user.uid,
         date: Timestamp.fromDate(combinedDateTime),
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
+        isDeleted: false,
       });
 
       await fetchTransactions();
@@ -106,35 +117,30 @@ export const useTransactions = () => {
     }
   };
 
-  // Update transaction
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
     try {
       setLoading(true);
       setError(null);
 
-      const transactionRef = doc(db, 'transactions', id);
-      const updateData: any = {
-        ...updates,
-        updatedAt: Timestamp.now(),
-      };
+      const updateData: any = { ...updates, updatedAt: Timestamp.now() };
 
       if (updates.date) {
-        // Combine selected date with current time for updates too
         const selectedDate = new Date(updates.date);
         const now = new Date();
-        const combinedDateTime = new Date(
-          selectedDate.getFullYear(),
-          selectedDate.getMonth(),
-          selectedDate.getDate(),
-          now.getHours(),
-          now.getMinutes(),
-          now.getSeconds(),
-          now.getMilliseconds()
+        updateData.date = Timestamp.fromDate(
+          new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            now.getHours(),
+            now.getMinutes(),
+            now.getSeconds(),
+            now.getMilliseconds()
+          )
         );
-        updateData.date = Timestamp.fromDate(combinedDateTime);
       }
 
-      await updateDoc(transactionRef, updateData);
+      await updateDoc(txDoc(id), updateData);
       await fetchTransactions();
     } catch (err: any) {
       setError(err.message);
@@ -145,13 +151,17 @@ export const useTransactions = () => {
     }
   };
 
-  // Delete transaction
+  // Soft-delete: hanya set isDeleted = true
   const deleteTransaction = async (id: string) => {
     try {
       setLoading(true);
       setError(null);
 
-      await deleteDoc(doc(db, 'transactions', id));
+      await updateDoc(txDoc(id), {
+        isDeleted: true,
+        updatedAt: Timestamp.now(),
+      });
+
       await fetchTransactions();
     } catch (err: any) {
       setError(err.message);

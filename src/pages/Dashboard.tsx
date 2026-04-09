@@ -178,14 +178,12 @@ export const Dashboard = () => {
 
         {/* Action Button */}
         <div className="flex gap-3 mb-6">
-          <Button
+          <button
             onClick={() => setIsFormOpen(true)}
-            variant="primary"
-            className="gap-2"
-            fullWidth
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
           >
             <Plus size={18} /> Tambah Transaksi
-          </Button>
+          </button>
         </div>
 
         {/* Error Message */}

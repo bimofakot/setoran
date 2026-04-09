@@ -73,11 +73,13 @@ export const TransactionList = ({
             </div>
           </div>
 
-          <div className="space-y-2 mb-6">
-            {dayTransactions.map((transaction) => (
+          <div className="space-y-0 mb-6 rounded-xl overflow-hidden border border-gray-100">
+            {dayTransactions.map((transaction, idx) => (
               <div
                 key={transaction.id}
-                className="card flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 hover:shadow-md transition-all gap-3 sm:gap-4"
+                className={`flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 sm:py-4 hover:shadow-md transition-all gap-3 sm:gap-4 border-b border-gray-50 last:border-b-0 ${
+                  idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'
+                }`}
               >
                 <div className="flex items-center gap-3 sm:gap-4 flex-1">
                   <div className={`

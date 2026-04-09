@@ -65,39 +65,45 @@ Dibuat dengan Aplikasi Keuangan Pribadi`;
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    
-    // Title
-    doc.setFontSize(20);
-    doc.text('Laporan Keuangan Pribadi', 20, 20);
-    
-    // Period
-    doc.setFontSize(12);
-    doc.text(`Periode: ${getDateRangeLabel()}`, 20, 35);
-    doc.text(`Tanggal Laporan: ${formatDate(new Date(), 'long')}`, 20, 45);
-    
-    // Summary
-    doc.text('Ringkasan:', 20, 60);
-    doc.text(`Pemasukan: ${formatCurrency(income)}`, 30, 70);
-    doc.text(`Pengeluaran: ${formatCurrency(expense)}`, 30, 80);
-    doc.text(`Saldo: ${formatCurrency(balance)}`, 30, 90);
-    
-    // Transactions table
+    const dateLabel = getDateRangeLabel();
+    const today = formatDate(new Date(), 'long');
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Laporan Keuangan', 14, 20);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Periode  : ${dateLabel}`, 14, 30);
+    doc.text(`Dicetak  : ${today}`, 14, 36);
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Ringkasan', 14, 48);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Total Pemasukan   : ${formatCurrency(income)}`, 14, 56);
+    doc.text(`Total Pengeluaran : ${formatCurrency(expense)}`, 14, 62);
+    doc.text(`Saldo Akhir       : ${formatCurrency(balance)}`, 14, 68);
+
     const tableData = transactions.map((t) => [
       formatDate(t.date, 'short'),
-      t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
-      t.category,
       t.description || '-',
-      formatCurrency(t.amount)
+      t.category,
+      (t.type === 'income' ? '+' : '-') + formatCurrency(t.amount),
     ]);
-    
+
     (doc as any).autoTable({
-      head: [['Tanggal', 'Tipe', 'Kategori', 'Deskripsi', 'Jumlah']],
+      head: [['Tanggal', 'Deskripsi', 'Kategori', 'Jumlah']],
       body: tableData,
-      startY: 105,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [59, 130, 246] },
+      startY: 76,
+      styles: { fontSize: 8, cellPadding: 3 },
+      headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: { 3: { halign: 'right' } },
     });
-    
+
     doc.save(`laporan-keuangan-${dateRange}-${new Date().toISOString().split('T')[0]}.pdf`);
     onOpenChange(false);
   };
@@ -136,18 +142,18 @@ Dibuat dengan Aplikasi Keuangan Pribadi`;
   };
 
   const shareToWhatsApp = () => {
-    const message = `📊 *Laporan Keuangan - ${getDateRangeLabel()}*
+    const today = new Date().toLocaleDateString('id-ID', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    });
+    const message =
+`Halo, berikut ringkasan Keuanganku dari Setoranku:
+📅 Periode: ${today}
+💰 Total Pemasukan: ${formatCurrency(income)}
+💸 Total Pengeluaran: ${formatCurrency(expense)}
+🏦 Saldo Akhir: ${formatCurrency(balance)}
+Kelola keuanganmu di: setoran.massbim.my.id`;
 
-💰 *Pemasukan:* ${formatCurrency(income)}
-💸 *Pengeluaran:* ${formatCurrency(expense)}
-💼 *Saldo:* ${formatCurrency(balance)}
-
-📅 *Total Transaksi:* ${transactions.length}
-
-_Dibuat dengan Aplikasi Keuangan Pribadi_`;
-
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   return (

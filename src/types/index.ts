@@ -8,6 +8,13 @@ export interface Transaction {
   date: Date;
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  type: 'income' | 'expense';
 }
 
 export interface User {

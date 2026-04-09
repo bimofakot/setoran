@@ -1,35 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Input, Select, Button, Dialog, Textarea } from './ui';
 import type { Transaction } from '../types';
-
-const incomeCategories = [
-  'Gaji',
-  'Freelance',
-  'Bonus',
-  'Investasi',
-  'Pinjaman',
-  'Lainnya',
-];
-
-const expenseCategories = [
-  'Makanan & Minuman',
-  'Transportasi',
-  'Kesehatan',
-  'Pendidikan',
-  'Hiburan',
-  'Tagihan',
-  'Belanja',
-  'Asuransi',
-  'Lainnya',
-];
+import { useCategories } from '../hooks/useCategories';
 
 interface TransactionFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  onSubmit: (data: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt' | 'isDeleted'>) => Promise<void>;
   initialData?: Transaction;
   loading?: boolean;
 }
+
+const formatDisplay = (raw: string) => {
+  const num = raw.replace(/\D/g, '');
+  if (!num) return '';
+  return new Intl.NumberFormat('id-ID').format(Number(num));
+};
 
 export const TransactionForm = ({
   open,
@@ -38,10 +24,11 @@ export const TransactionForm = ({
   initialData,
   loading = false,
 }: TransactionFormProps) => {
+  const { getByType } = useCategories();
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
     category: '',
-    amount: '',
+    amount: '',        // raw numeric string, no separators
     description: '',
     date: new Date().toISOString().split('T')[0],
   });
@@ -68,41 +55,41 @@ export const TransactionForm = ({
     setErrors({});
   }, [open, initialData]);
 
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Strip semua non-digit, simpan sebagai raw
+    const raw = e.target.value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, amount: raw }));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
     if (!formData.category) newErrors.category = 'Kategori harus dipilih';
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+    if (!formData.amount || Number(formData.amount) <= 0)
       newErrors.amount = 'Jumlah harus lebih dari 0';
-    }
     if (!formData.date) newErrors.date = 'Tanggal harus dipilih';
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     try {
       await onSubmit({
         type: formData.type,
         category: formData.category,
-        amount: parseFloat(formData.amount),
+        amount: Number(formData.amount),   // angka murni
         description: formData.description,
         date: new Date(formData.date),
         userId: '',
       } as Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>);
-
       onOpenChange(false);
     } catch (error) {
       console.error('Error submitting form:', error);
     }
   };
 
-  const categories = formData.type === 'income' ? incomeCategories : expenseCategories;
+  const categories = getByType(formData.type);
 
   return (
     <Dialog
@@ -158,14 +145,12 @@ export const TransactionForm = ({
         {/* Amount */}
         <Input
           label="Jumlah (IDR)"
-          type="number"
-          min="0"
-          step="100"
-          value={formData.amount}
-          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-          error={errors.amount}
+          type="text"
           inputMode="numeric"
-          placeholder="Masukkan jumlah"
+          value={formatDisplay(formData.amount)}
+          onChange={handleAmountChange}
+          error={errors.amount}
+          placeholder="Contoh: 100.000"
         />
 
         {/* Date */}
@@ -180,7 +165,7 @@ export const TransactionForm = ({
         {/* Description */}
         <Textarea
           label="Deskripsi (Opsional)"
-          placeholder="Masukkan deskripsi transaksi..."
+          placeholder="Contoh: Makan siang di warung, bayar listrik bulan ini..."
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           rows={3}

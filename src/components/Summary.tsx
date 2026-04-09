@@ -21,7 +21,7 @@ export const Summary = ({ transactions, dateLabel }: SummaryProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 w-full">
       {/* Income Card */}
-      <div className="card bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500">
+      <div className="card bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500 rounded-2xl shadow-sm hover:scale-[1.02] transition-all">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-green-700 font-medium mb-1">Pemasukan</p>
@@ -37,7 +37,7 @@ export const Summary = ({ transactions, dateLabel }: SummaryProps) => {
       </div>
 
       {/* Expense Card */}
-      <div className="card bg-gradient-to-br from-red-50 to-red-100 border-l-4 border-red-500">
+      <div className="card bg-gradient-to-br from-red-50 to-red-100 border-l-4 border-red-500 rounded-2xl shadow-sm hover:scale-[1.02] transition-all">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-red-700 font-medium mb-1">Pengeluaran</p>
@@ -53,7 +53,7 @@ export const Summary = ({ transactions, dateLabel }: SummaryProps) => {
       </div>
 
       {/* Balance Card */}
-      <div className={`card bg-gradient-to-br border-l-4 col-span-1 sm:col-span-2 lg:col-span-1 ${
+      <div className={`card bg-gradient-to-br border-l-4 col-span-1 sm:col-span-2 lg:col-span-1 rounded-2xl shadow-sm hover:scale-[1.02] transition-all ${
         balance >= 0
           ? 'from-blue-50 to-blue-100 border-blue-500'
           : 'from-yellow-50 to-yellow-100 border-yellow-500'
