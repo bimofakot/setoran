@@ -3,9 +3,8 @@ import type { DateRange, Transaction } from '../types';
 import { TransactionForm } from '../components/TransactionForm';
 import { TransactionList } from '../components/TransactionList';
 import { Summary, QuickStats } from '../components/Summary';
-import { DateRangeFilter } from '../components/DateRangeFilter';
-import { ExportShare } from '../components/ExportShare';
-import { Analytics } from '../components/Analytics';
+import { PeriodNavigator } from '../components/PeriodNavigator';
+import { ExportShare } from '../components/ExportShare';import { Analytics } from '../components/Analytics';
 import { ProfilePage } from './ProfilePage';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAuth } from '../hooks/useAuth';
@@ -91,6 +90,7 @@ export const Dashboard = () => {
   const [activePage, setActivePage] = useState<ActivePage>('dashboard');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
   const [selectedRange, setSelectedRange] = useState<DateRange>('today');
+  const [periodOffset, setPeriodOffset] = useState(0);
   const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [filteredTransactions, setFilteredTransactions] = useState(transactions);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -106,16 +106,17 @@ export const Dashboard = () => {
         return td >= customRange.start && td <= customRange.end;
       }));
     } else {
-      const { startDate, endDate } = getDateRange(selectedRange);
+      const { startDate, endDate } = getDateRange(selectedRange, periodOffset);
       setFilteredTransactions(transactions.filter((t) => {
         const td = new Date(t.date);
         return td >= startDate && td <= endDate;
       }));
     }
-  }, [selectedRange, transactions, customRange]);
+  }, [selectedRange, periodOffset, transactions, customRange]);
 
   const handleDateRangeChange = (range: DateRange, startDate?: Date, endDate?: Date) => {
     setSelectedRange(range);
+    setPeriodOffset(0);
     if (range === 'custom' && startDate && endDate) setCustomRange({ start: startDate, end: endDate });
     else setCustomRange(null);
   };
@@ -149,9 +150,7 @@ export const Dashboard = () => {
   };
 
   const dateLabel: Record<DateRange, string> = {
-    today: 'Hari Ini', week: 'Minggu Ini', lastWeek: 'Minggu Lalu',
-    month: 'Bulan Ini', lastMonth: 'Bulan Lalu',
-    year: 'Tahun Ini', lastYear: 'Tahun Lalu', custom: 'Custom',
+    today: 'Hari Ini', week: 'Mingguan', month: 'Bulanan', year: 'Tahunan', custom: 'Custom',
   };
   const displayName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -283,7 +282,12 @@ export const Dashboard = () => {
               <QuickStats transactions={filteredTransactions} />
 
               <div className="card">
-                <DateRangeFilter selectedRange={selectedRange} onRangeChange={handleDateRangeChange} />
+                <PeriodNavigator
+                  mode={selectedRange}
+                  offset={periodOffset}
+                  onModeChange={(m) => handleDateRangeChange(m)}
+                  onOffsetChange={setPeriodOffset}
+                />
               </div>
 
               <button

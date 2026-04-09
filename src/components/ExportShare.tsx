@@ -72,9 +72,7 @@ https://setoran.massbim.my.id`;
 
   const getDateRangeLabel = () => {
     const labels: Record<DateRange, string> = {
-      today: 'Hari Ini', week: 'Minggu Ini', lastWeek: 'Minggu Lalu',
-      month: 'Bulan Ini', lastMonth: 'Bulan Lalu',
-      year: 'Tahun Ini', lastYear: 'Tahun Lalu', custom: 'Custom',
+      today: 'Hari Ini', week: 'Mingguan', month: 'Bulanan', year: 'Tahunan', custom: 'Custom',
     };
     return labels[dateRange];
   };

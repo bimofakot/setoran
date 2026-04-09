@@ -36,46 +36,32 @@ export const formatTime = (date: Date | string): string => {
 
 import type { DateRange } from '../types';
 
-export const getDateRange = (type: DateRange = 'today') => {
+// offset: 0 = current, -1 = previous, +1 = next
+export const getDateRange = (type: DateRange = 'today', offset = 0) => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   let startDate: Date, endDate: Date;
 
   switch (type) {
     case 'today':
-      startDate = today;
-      endDate = new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1);
+      startDate = new Date(today.getTime() + offset * 24 * 60 * 60 * 1000);
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1);
       break;
     case 'week': {
       const day = now.getDay();
       const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-      startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+      const thisWeekStart = new Date(now.getFullYear(), now.getMonth(), diff);
+      startDate = new Date(thisWeekStart.getTime() + offset * 7 * 24 * 60 * 60 * 1000);
       endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
       break;
     }
-    case 'lastWeek': {
-      const day = now.getDay();
-      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-      endDate = new Date(now.getFullYear(), now.getMonth(), diff - 1, 23, 59, 59, 999);
-      startDate = new Date(endDate.getTime() - 6 * 24 * 60 * 60 * 1000);
-      startDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-      break;
-    }
     case 'month':
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-      break;
-    case 'lastMonth':
-      startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      startDate = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0, 23, 59, 59, 999);
       break;
     case 'year':
-      startDate = new Date(now.getFullYear(), 0, 1);
-      endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-      break;
-    case 'lastYear':
-      startDate = new Date(now.getFullYear() - 1, 0, 1);
-      endDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+      startDate = new Date(now.getFullYear() + offset, 0, 1);
+      endDate = new Date(now.getFullYear() + offset, 11, 31, 23, 59, 59, 999);
       break;
     default:
       startDate = today;

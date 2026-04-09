@@ -384,9 +384,7 @@
   }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
-  /* Extra bottom padding on mobile to clear 4-item bottom nav (4rem) + safe area */
-  --bottom-nav-h: 4rem;
-  .mobile-pb { padding-bottom: calc(var(--bottom-nav-h) + 1.5rem + env(safe-area-inset-bottom, 0px)); }
+  .mobile-pb { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
 
   /* ── Theme toggle button ── */
   .theme-btn {
