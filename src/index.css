@@ -144,14 +144,19 @@
     .main-content { margin-left: 0; }
   }
 
-  /* ── Topbar (mobile) ── */
+  /* ── Topbar (mobile) — fixed sticky, always visible ── */
   .topbar {
-    position: sticky; top: 0; z-index: 30; height: 3.75rem;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 35; height: 3.75rem;
     display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
-    background: color-mix(in srgb, var(--bg-base) 85%, transparent);
+    background: color-mix(in srgb, var(--bg-base) 92%, transparent);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     transition: background 0.25s, border-color 0.25s;
+  }
+
+  /* Compensate for fixed topbar height on mobile */
+  @media (max-width: 767px) {
+    .main-content { padding-top: 3.75rem; }
   }
 
   /* ── Bottom nav (mobile) ── */

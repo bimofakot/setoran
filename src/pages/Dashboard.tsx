@@ -19,9 +19,10 @@ const SUPPORT_WA    = '6285872194248';
 const SUPPORT_EMAIL = 'andraani30@gmail.com';
 // ────────────────────────────────────────────────────────────
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.3';
 
 const CHANGELOG = [
+  { version: 'v1.2.3', date: '10 Apr 2026', items: ['Sticky top nav (fixed, selalu terlihat)', 'Z-index hierarchy diperbaiki', 'Padding kompensasi topbar otomatis'] },
   { version: 'v1.2.0', date: '10 Apr 2026', items: ['Smart Period Navigator di Analisis', 'Real-time sync (onSnapshot)', 'Smart Comparison dinamis', 'Responsive breakpoints & pill scroll', 'Auto-hide bottom nav', 'Date persistence fix (WIB)'] },
   { version: 'v1.1.0', date: '09 Apr 2026', items: ['Tiga tema (Gelap/Terang/Sistem)', '6 avatar kustom', 'Export PDF & Excel', 'Ganti password', 'Menu Bantuan & Hubungi Kami'] },
   { version: 'v1.0.0', date: '30 Mar 2026', items: ['Rilis perdana', 'Catat transaksi harian', 'Dashboard & Analitik', 'PWA installable'] },
@@ -296,7 +297,7 @@ export const Dashboard = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 px-3 sm:px-5 lg:px-8 py-5 sm:py-7 max-w-5xl w-full mx-auto mobile-pb">
+        <main className="flex-1 px-3 sm:px-5 lg:px-8 pt-4 sm:pt-7 pb-5 sm:pb-7 max-w-5xl w-full mx-auto mobile-pb">
           {activePage === 'profile' ? (
             <ProfilePage />
           ) : activePage === 'analytics' ? (
