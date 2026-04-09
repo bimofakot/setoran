@@ -101,37 +101,3 @@ export const calculateStatistics = (
     })),
   };
 };
-
-export const generatePDF = (content: string, filename: string) => {
-  const element = document.createElement('div');
-  element.innerHTML = content;
-  element.style.padding = '20px';
-  element.style.fontFamily = 'Arial, sans-serif';
-  element.style.fontSize = '14px';
-  element.style.lineHeight = '1.6';
-
-  const printWindow = window.open('', '', 'width=800,height=600');
-  if (printWindow) {
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${filename}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-            .total { font-weight: bold; background-color: #f9f9f9; }
-            h2 { color: #333; margin-top: 20px; }
-          </style>
-        </head>
-        <body>
-          ${element.innerHTML}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
-  }
-};

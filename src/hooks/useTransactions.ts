@@ -116,7 +116,7 @@ export const useTransactions = () => {
     }
   };
 
-  // kept for backward compat (no-op, listener handles refresh)
+  // fetchTransactions kept as no-op for backward compatibility with any external callers
   const fetchTransactions = async () => {};
 
   return { transactions, loading, error, fetchTransactions, addTransaction, updateTransaction, deleteTransaction };
