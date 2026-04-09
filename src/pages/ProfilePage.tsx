@@ -60,6 +60,7 @@ export const ProfilePage = () => {
   };
 
   const handleDeleteCategory = (id: string, name: string) => {
+    if (name === 'Lainnya' || name === 'Lainnya (Pemasukan)' || name === 'Lainnya (Pengeluaran)') return;
     if (!confirm(`Hapus kategori "${name}"?\n\nData yang sudah dihapus tidak bisa dipulihkan dan akan dihapus permanen dari database.`)) return;
     removeCategory(id);
   };
@@ -276,23 +277,30 @@ ${name}`
               <div className="space-y-0.5 max-h-56 overflow-y-auto">
                 {list.length === 0 ? (
                   <p className="text-xs text-center py-4" style={{ color: 'var(--text-muted)' }}>Belum ada kategori</p>
-                ) : list.map((cat) => (
+                ) : list.map((cat) => {
+                  const isLocked = cat.name === 'Lainnya' || cat.name === 'Lainnya (Pemasukan)' || cat.name === 'Lainnya (Pengeluaran)';
+                  return (
                   <div key={cat.id} className="flex items-center justify-between py-2 px-2 rounded-lg transition-colors"
                     style={{ background: 'transparent' }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{cat.name}</span>
-                    <button
-                      onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                      className="p-1.5 rounded-lg transition-colors"
-                      style={{ color: 'var(--red-light)' }}
-                      title={`Hapus ${cat.name}`}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
-                      <Trash2 size={13} />
-                    </button>
+                    {isLocked ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ color: 'var(--text-muted)', background: 'var(--bg-subtle)' }}>sistem</span>
+                    ) : (
+                      <button
+                        onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                        className="p-1.5 rounded-lg transition-colors"
+                        style={{ color: 'var(--red-light)' }}
+                        title={`Hapus ${cat.name}`}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

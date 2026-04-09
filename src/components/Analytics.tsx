@@ -214,10 +214,20 @@ export const Analytics = ({
         </div>
         <div className="relative h-56 rounded-xl p-4" style={{ background: 'var(--bg-subtle)' }}>
           <svg viewBox="0 0 700 210" className="w-full h-full overflow-visible">
-            {[0, 25, 50, 75, 100].map((pct) => (
-              <line key={pct} x1="40" y1={180 - pct * 1.6} x2="680" y2={180 - pct * 1.6}
-                stroke="var(--border)" strokeWidth="1" />
-            ))}
+            {/* Grid lines with Y-axis labels */}
+            {[0, 25, 50, 75, 100].map((pct) => {
+              const y = 180 - pct * 1.6;
+              const val = pct === 0 ? '0' : pct === 100 ? formatCurrency(maxDaily) : '';
+              return (
+                <g key={pct}>
+                  <line x1="40" y1={y} x2="680" y2={y}
+                    stroke={pct === 0 ? 'var(--border-hover)' : 'var(--border)'}
+                    strokeWidth={pct === 0 ? 1.5 : 0.75}
+                    strokeDasharray={pct === 0 ? undefined : '4,4'} />
+                  {val && <text x="36" y={y + 4} fontSize="8" textAnchor="end" fill="var(--text-muted)">{val}</text>}
+                </g>
+              );
+            })}
             <polyline
               points={dailyData.map((d, i) => `${60 + i * 100},${180 - (d.income / maxDaily) * 160}`).join(' ')}
               fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinejoin="round" />
@@ -229,8 +239,9 @@ export const Analytics = ({
               const yInc = 180 - (d.income / maxDaily) * 160;
               const yExp = 180 - (d.expense / maxDaily) * 160;
               const isHov = hoveredDay === i;
-              const tipX = Math.min(x - 70, 560);
-              const tipY = Math.min(yInc, yExp) - 72;
+              // clamp tooltip so it never goes off left/right edge
+              const tipX = Math.max(4, Math.min(x - 70, 556));
+              const tipY = Math.max(4, Math.min(yInc, yExp) - 72);
               return (
                 <g key={i} onMouseEnter={() => setHoveredDay(i)} onMouseLeave={() => setHoveredDay(null)}
                   onTouchStart={() => setHoveredDay(i)} onTouchEnd={() => setTimeout(() => setHoveredDay(null), 1500)}
@@ -254,9 +265,17 @@ export const Analytics = ({
                       </text>
                     </g>
                   )}
-                  <text x={x} y="200" fontSize="10" textAnchor="middle" fill="var(--text-muted)">
-                    {d.date.getDate()}/{d.date.getMonth() + 1}
-                  </text>
+                  {/* Date label — only show on non-hover to avoid overlap */}
+                  {!isHov && (
+                    <text x={x} y="200" fontSize="10" textAnchor="middle" fill="var(--text-muted)">
+                      {d.date.getDate()}/{d.date.getMonth() + 1}
+                    </text>
+                  )}
+                  {isHov && (
+                    <text x={x} y="200" fontSize="10" textAnchor="middle" fontWeight="700" fill="var(--accent-light)">
+                      {d.date.getDate()}/{d.date.getMonth() + 1}
+                    </text>
+                  )}
                 </g>
               );
             })}

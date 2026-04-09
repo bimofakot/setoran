@@ -70,12 +70,10 @@ export const useTransactions = () => {
     if (!user) return;
     try {
       setError(null);
-      const selectedDate = new Date(transactionData.date);
+      // Parse date string as local date (avoid UTC midnight shift)
+      const [y, m, d] = (transactionData.date as unknown as string).toString().split('T')[0].split('-').map(Number);
       const now = new Date();
-      const combinedDateTime = new Date(
-        selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(),
-        now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()
-      );
+      const combinedDateTime = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
       const docRef = await addDoc(txCollection(), {
         ...transactionData,
         userId: user.uid,
@@ -96,12 +94,10 @@ export const useTransactions = () => {
       setError(null);
       const updateData: any = { ...updates, updatedAt: Timestamp.now() };
       if (updates.date) {
-        const selectedDate = new Date(updates.date);
+        const dateStr = (updates.date as unknown as string).toString().split('T')[0];
+        const [y, m, d] = dateStr.split('-').map(Number);
         const now = new Date();
-        updateData.date = Timestamp.fromDate(new Date(
-          selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(),
-          now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()
-        ));
+        updateData.date = Timestamp.fromDate(new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()));
       }
       await updateDoc(txDoc(id), updateData);
     } catch (err: any) {

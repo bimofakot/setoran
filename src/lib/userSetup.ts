@@ -52,11 +52,20 @@ export const getEmailByUsername = async (username: string): Promise<string | nul
   return snap.docs[0].data().email as string;
 };
 
-// Seed hanya jika koleksi benar-benar kosong — tidak mengunci atau memaksa kategori yang sudah ada.
+// Seed hanya jika koleksi kosong. Jika ada data, cek duplikat nama+type sebelum tambah.
 export const initUserCategories = async (userId: string) => {
   const categoriesRef = collection(db, 'users', userId, 'categories');
   const snapshot = await getDocs(categoriesRef);
-  if (!snapshot.empty) return; // sudah ada data, biarkan user mengelolanya sendiri
+  if (!snapshot.empty) {
+    // koleksi sudah ada — hanya tambah yang benar-benar belum ada (no double seed)
+    const existing = new Set(snapshot.docs.map((d) => `${d.data().name}|${d.data().type}`));
+    await Promise.all(
+      DEFAULT_CATEGORIES
+        .filter((cat) => !existing.has(`${cat.name}|${cat.type}`))
+        .map((cat) => setDoc(doc(categoriesRef), { name: cat.name, type: cat.type }))
+    );
+    return;
+  }
   await Promise.all(
     DEFAULT_CATEGORIES.map((cat) => setDoc(doc(categoriesRef), { name: cat.name, type: cat.type }))
   );

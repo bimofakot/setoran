@@ -10,9 +10,9 @@ export default defineConfig({
       manifest: {
         name: 'Setoranku',
         short_name: 'Setoran',
-        description: 'Aplikasi pencatat keuangan pribadi',
-        theme_color: '#3b82f6',
-        background_color: '#ffffff',
+        description: 'Aplikasi pencatat keuangan pribadi v1.2.0',
+        theme_color: '#7c3aed',
+        background_color: '#05080f',
         display: 'standalone',
         start_url: '/',
         icons: [

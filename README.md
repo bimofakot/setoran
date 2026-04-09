@@ -60,6 +60,7 @@ A premium personal finance web app for tracking daily income and expenses. Built
 - **Scrollable filter pills** — horizontal scroll on narrow screens, no text clipping
 - **Dynamic grids** — stat cards, quick stats, and analytics auto-adjust column count
 - **Dynamic padding** — main content padding scales with screen size
+- **Auto-hide bottom nav** — mobile nav slides away on scroll down, reappears on scroll up
 
 ### 📄 Professional PDF Reports
 - **Theme-synced** — PDF header and table colors match your active theme (violet dark or violet light)
@@ -72,6 +73,7 @@ A premium personal finance web app for tracking daily income and expenses. Built
 - **Hubungi Kami** — pilih WhatsApp atau Email langsung dari sidebar
 - **Auto-filled message** — nama, sumber, dan template kendala sudah terisi otomatis
 - **Menu Bantuan** — panduan onboarding 5 langkah di sidebar untuk user baru
+- **Update Terbaru** — changelog versi (v1.x.x) di sidebar, sinkron dengan versi PWA manifest
 
 ### 🔐 Account Security
 - **Ganti Password** — form reauthentication + update password di halaman Profil

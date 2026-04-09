@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { DateRange, Transaction } from '../types';
 import { TransactionForm } from '../components/TransactionForm';
 import { TransactionList } from '../components/TransactionList';
 import { Summary, QuickStats } from '../components/Summary';
 import { PeriodNavigator } from '../components/PeriodNavigator';
-import { ExportShare } from '../components/ExportShare';import { Analytics } from '../components/Analytics';
+import { ExportShare } from '../components/ExportShare';
+import { Analytics } from '../components/Analytics';
 import { ProfilePage } from './ProfilePage';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAuth } from '../hooks/useAuth';
@@ -17,10 +18,19 @@ import { getAvatarById } from '../lib/avatars';
 const SUPPORT_WA    = '6285872194248';
 const SUPPORT_EMAIL = 'andraani30@gmail.com';
 // ────────────────────────────────────────────────────────────
+
+const APP_VERSION = '1.2.0';
+
+const CHANGELOG = [
+  { version: 'v1.2.0', date: '10 Apr 2026', items: ['Smart Period Navigator di Analisis', 'Real-time sync (onSnapshot)', 'Smart Comparison dinamis', 'Responsive breakpoints & pill scroll', 'Auto-hide bottom nav', 'Date persistence fix (WIB)'] },
+  { version: 'v1.1.0', date: '09 Apr 2026', items: ['Tiga tema (Gelap/Terang/Sistem)', '6 avatar kustom', 'Export PDF & Excel', 'Ganti password', 'Menu Bantuan & Hubungi Kami'] },
+  { version: 'v1.0.0', date: '30 Mar 2026', items: ['Rilis perdana', 'Catat transaksi harian', 'Dashboard & Analitik', 'PWA installable'] },
+];
+
 import {
   Plus, Menu, X, BarChart3, LayoutDashboard,
   Share2, UserCircle, ChevronRight, Wallet,
-  Sun, Moon, Monitor, LogOut, MessageCircle, Mail, HelpCircle,
+  Sun, Moon, Monitor, LogOut, MessageCircle, Mail, HelpCircle, Sparkles,
 } from 'lucide-react';
 
 const HELP_STEPS = [
@@ -96,6 +106,22 @@ export const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showContactMenu, setShowContactMenu] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
+  const [showCustomDash, setShowCustomDash] = useState(false);
+  const [customDashStart, setCustomDashStart] = useState('');
+  const [customDashEnd, setCustomDashEnd] = useState('');
+  const [navHidden, setNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setNavHidden(y > lastScrollY.current && y > 80);
+      lastScrollY.current = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     if (selectedRange === 'custom' && customRange) {
@@ -117,6 +143,15 @@ export const Dashboard = () => {
     setPeriodOffset(0);
     if (range === 'custom' && startDate && endDate) setCustomRange({ start: startDate, end: endDate });
     else setCustomRange(null);
+  };
+
+  const handleApplyCustomDash = () => {
+    if (!customDashStart || !customDashEnd) return;
+    const start = new Date(customDashStart);
+    const end = new Date(customDashEnd + 'T23:59:59');
+    setSelectedRange('custom');
+    setCustomRange({ start, end });
+    setShowCustomDash(false);
   };
 
   const handleAddTransaction = async (data: any) => {
@@ -171,6 +206,16 @@ export const Dashboard = () => {
       <span className="sidebar-section">Aksi</span>
       <button onClick={() => { setIsExportOpen(true); setSidebarOpen(false); }} className="nav-item">
         <Share2 size={16} /> Bagikan / Export
+      </button>
+
+      {/* Update Terbaru */}
+      <button onClick={() => { setShowChangelog(v => !v); setShowContactMenu(false); setShowHelp(false); }}
+        className={`nav-item ${showChangelog ? 'active' : ''}`}>
+        <Sparkles size={16} /> Update Terbaru
+        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+          style={{ background: 'rgba(124,58,237,0.15)', color: 'var(--accent-light)' }}>
+          {APP_VERSION}
+        </span>
       </button>
 
       {/* Hubungi Kami */}
@@ -289,11 +334,36 @@ export const Dashboard = () => {
 
               <div className="card">
                 <PeriodNavigator
-                  mode={selectedRange}
+                  mode={selectedRange === 'custom' ? 'month' : selectedRange}
                   offset={periodOffset}
-                  onModeChange={(m) => handleDateRangeChange(m)}
+                  onModeChange={(m) => { handleDateRangeChange(m); setShowCustomDash(m === 'custom'); }}
                   onOffsetChange={setPeriodOffset}
+                  showCustom
+                  onShowCustom={() => setShowCustomDash(true)}
+                  isCustomActive={selectedRange === 'custom'}
                 />
+                {showCustomDash && (
+                  <div className="mt-3 flex flex-wrap gap-2 items-end animate-fade-up">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs" style={{ color: 'var(--text-muted)' }}>Dari</label>
+                      <input type="date" className="input-dark text-sm" value={customDashStart}
+                        onChange={e => setCustomDashStart(e.target.value)} />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs" style={{ color: 'var(--text-muted)' }}>Sampai</label>
+                      <input type="date" className="input-dark text-sm" value={customDashEnd}
+                        onChange={e => setCustomDashEnd(e.target.value)} />
+                    </div>
+                    <button onClick={handleApplyCustomDash}
+                      className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600">
+                      Terapkan
+                    </button>
+                    <button onClick={() => { setShowCustomDash(false); handleDateRangeChange('today'); }}
+                      className="px-3 py-2 rounded-xl text-sm" style={{ color: 'var(--text-muted)', background: 'var(--bg-subtle)' }}>
+                      Batal
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button
@@ -336,8 +406,8 @@ export const Dashboard = () => {
         </main>
       </div>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="bottom-nav md:hidden">
+      {/* Mobile Bottom Nav — auto-hide on scroll down */}
+      <nav className={`bottom-nav md:hidden ${navHidden ? 'hidden-nav' : ''}`}>
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => navigate(id)} className={`bottom-nav-item ${activePage === id ? 'active' : ''}`}>
             <Icon size={20} />{label}
@@ -442,6 +512,44 @@ export const Dashboard = () => {
                     <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{s.title}</p>
                     <p className="text-xs leading-relaxed mt-0.5" style={{ color: 'var(--text-secondary)' }}>{s.desc}</p>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Floating: Update Terbaru / Changelog */}
+      {showChangelog && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setShowChangelog(false)} />
+          <div className="floating-window">
+            <div className="floating-window-header">
+              <div className="flex items-center gap-2">
+                <Sparkles size={15} style={{ color: 'var(--accent-light)' }} />
+                <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Update Terbaru</span>
+              </div>
+              <button onClick={() => setShowChangelog(false)} className="p-1 rounded-lg" style={{ color: 'var(--text-muted)' }}>
+                <X size={15} />
+              </button>
+            </div>
+            <div className="floating-window-body space-y-4">
+              {CHANGELOG.map((entry) => (
+                <div key={entry.version}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(124,58,237,0.15)', color: 'var(--accent-light)' }}>
+                      {entry.version}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{entry.date}</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {entry.items.map((item) => (
+                      <li key={item} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        <span style={{ color: 'var(--accent-light)', marginTop: 1 }}>•</span>{item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>

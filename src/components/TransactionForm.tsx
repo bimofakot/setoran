@@ -12,6 +12,13 @@ interface TransactionFormProps {
   loading?: boolean;
 }
 
+// Returns today's date in WIB (UTC+7) as YYYY-MM-DD
+const todayWIB = () => {
+  const now = new Date();
+  const wib = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  return wib.toISOString().split('T')[0];
+};
+
 const formatDisplay = (raw: string) => {
   const num = raw.replace(/\D/g, '');
   if (!num) return '';
@@ -25,7 +32,7 @@ export const TransactionForm = ({ open, onOpenChange, onSubmit, initialData, loa
     category: '',
     amount: '',
     description: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayWIB(),
   });
   const [customCategory, setCustomCategory] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -41,7 +48,7 @@ export const TransactionForm = ({ open, onOpenChange, onSubmit, initialData, loa
       });
       setCustomCategory('');
     } else {
-      setFormData({ type: 'expense', category: '', amount: '', description: '', date: new Date().toISOString().split('T')[0] });
+      setFormData({ type: 'expense', category: '', amount: '', description: '', date: todayWIB() });
       setCustomCategory('');
     }
     setErrors({});

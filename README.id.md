@@ -74,6 +74,7 @@ Setiap kategori disimpan sebagai dokumen terpisah di Firestore, bukan sebagai ar
 - **Hubungi Kami** — pilih WhatsApp atau Email langsung dari sidebar
 - **Pesan otomatis** — nama, sumber, dan template kendala sudah terisi otomatis
 - **Menu Bantuan** — panduan onboarding 5 langkah di sidebar untuk user baru
+- **Update Terbaru** — changelog versi (v1.x.x) di sidebar, sinkron dengan versi PWA manifest
 
 ### 🔐 Keamanan Akun
 - **Ganti Password** — form reauthentication + update password di halaman Profil
@@ -85,6 +86,7 @@ Setiap kategori disimpan sebagai dokumen terpisah di Firestore, bukan sebagai ar
 - **Filter pills scrollable** — scroll horizontal tanpa teks terpotong di layar sempit
 - **Grid dinamis** — stat cards, quick stats, dan analitik menyesuaikan kolom otomatis
 - **Padding dinamis** — konten utama menyesuaikan ukuran layar secara otomatis
+- **Auto-hide bottom nav** — menu bawah menyembunyikan diri saat scroll ke bawah, muncul kembali saat scroll ke atas
 
 ---
 
