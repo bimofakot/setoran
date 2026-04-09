@@ -13,10 +13,15 @@ import { useProfile } from '../hooks/useProfile';
 import { useTheme } from '../lib/ThemeContext';
 import { getDateRange } from '../utils/helpers';
 import { getAvatarById } from '../lib/avatars';
+
+// ── CONTACT CONFIG — update these when contact info changes ──
+const SUPPORT_WA    = '6285872194248';
+const SUPPORT_EMAIL = 'andraani30@gmail.com';
+// ────────────────────────────────────────────────────────────
 import {
   Plus, Menu, X, BarChart3, LayoutDashboard,
   Share2, UserCircle, ChevronRight, Wallet,
-  Sun, Moon, Monitor,
+  Sun, Moon, Monitor, LogOut, MessageCircle, Mail,
 } from 'lucide-react';
 
 type ActivePage = 'dashboard' | 'analytics' | 'profile';
@@ -69,7 +74,7 @@ const AvatarIcon = ({ avatarId, initials }: { avatarId: string; initials: string
 };
 
 export const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { profile } = useProfile();
   const { transactions, loading, error, fetchTransactions, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
 
@@ -81,6 +86,7 @@ export const Dashboard = () => {
   const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [filteredTransactions, setFilteredTransactions] = useState(transactions);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showContactMenu, setShowContactMenu] = useState(false);
 
   useEffect(() => { fetchTransactions(); }, []);
 
@@ -116,6 +122,41 @@ export const Dashboard = () => {
 
   const handleEdit = (t: Transaction) => { setEditingTransaction(t); setIsFormOpen(true); };
   const navigate = (page: ActivePage) => { setActivePage(page); setSidebarOpen(false); };
+  const handleLogout = async () => { try { await logout(); } catch (e) { console.error(e); } };
+
+  const handleContactWA = () => {
+    const name = profile?.displayName || user?.email || 'Pengguna';
+    const msg =
+`Halo Tim Keuanganku 👋
+
+Saya ingin menyampaikan pertanyaan/kendala berikut:
+
+• Nama       : ${name}
+• Sumber info: (Contoh: GitHub / LinkedIn / Teman / Google)
+• Kendala    : [Jelaskan masalah atau pertanyaan Anda di sini]
+
+Terima kasih atas bantuannya!
+— Dikirim dari setoran.massbim.my.id`;
+    window.open(`https://wa.me/${SUPPORT_WA}?text=${encodeURIComponent(msg)}`, '_blank');
+    setShowContactMenu(false); setSidebarOpen(false);
+  };
+
+  const handleContactEmail = () => {
+    const name = profile?.displayName || user?.email || 'Pengguna';
+    const subject = encodeURIComponent('Bantuan - Keuanganku App');
+    const body = encodeURIComponent(
+`Halo Tim Keuanganku,
+
+Nama       : ${name}
+Sumber info: (Contoh: GitHub / LinkedIn / Teman / Google)
+Kendala    : [Jelaskan masalah atau pertanyaan Anda di sini]
+
+Terima kasih,
+${name}`
+    );
+    window.open(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`, '_blank');
+    setShowContactMenu(false); setSidebarOpen(false);
+  };
 
   const dateLabel = { today: 'Hari Ini', week: 'Minggu Ini', month: 'Bulan Ini', year: 'Tahun Ini', custom: 'Custom' }[selectedRange];
   const displayName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'User';
@@ -141,6 +182,37 @@ export const Dashboard = () => {
         <Share2 size={16} /> Bagikan / Export
       </button>
 
+      {/* Hubungi Kami inline */}
+      <button onClick={() => setShowContactMenu(v => !v)} className="nav-item">
+        <MessageCircle size={16} /> Hubungi Kami
+      </button>
+      {showContactMenu && (
+        <div className="mx-1 mb-1 rounded-xl border overflow-hidden animate-fade-up" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
+          <button onClick={handleContactWA}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors text-left"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            <MessageCircle size={14} className="text-green-500 shrink-0" />
+            <div>
+              <p className="font-medium text-xs" style={{ color: 'var(--text-primary)' }}>WhatsApp</p>
+              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Respons cepat</p>
+            </div>
+          </button>
+          <button onClick={handleContactEmail}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors text-left border-t"
+            style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            <Mail size={14} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
+            <div>
+              <p className="font-medium text-xs" style={{ color: 'var(--text-primary)' }}>Email</p>
+              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Untuk lampiran dokumen</p>
+            </div>
+          </button>
+        </div>
+      )}
+
       <hr className="sidebar-divider" />
       <span className="sidebar-section">Tampilan</span>
       <div className="px-0.5">
@@ -152,6 +224,11 @@ export const Dashboard = () => {
           <AvatarIcon avatarId={profile?.avatarId} initials={initials} />
           <span className="flex-1 truncate text-sm">{displayName}</span>
           <ChevronRight size={13} style={{ color: 'var(--text-muted)' }} />
+        </button>
+        <button onClick={handleLogout} className="nav-item" style={{ color: 'var(--red-light)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+          <LogOut size={16} /> Keluar
         </button>
       </div>
     </>
@@ -212,9 +289,12 @@ export const Dashboard = () => {
           ) : (
             <div className="space-y-5 animate-fade-up">
               <div className="page-header flex items-start justify-between">
-                <div>
-                  <h1 className="page-title">Dashboard</h1>
-                  <p className="page-subtitle">Selamat datang, <span style={{ color: 'var(--accent-light)', fontWeight: 600 }}>{displayName.split(' ')[0]}</span> 👋</p>
+                <div className="flex items-center gap-3">
+                  <AvatarIcon avatarId={profile?.avatarId} initials={initials} />
+                  <div>
+                    <h1 className="page-title">Dashboard</h1>
+                    <p className="page-subtitle">Selamat datang, <span style={{ color: 'var(--accent-light)', fontWeight: 600 }}>{displayName.split(' ')[0]}</span> 👋</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setIsFormOpen(true)}

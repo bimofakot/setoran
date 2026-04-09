@@ -108,9 +108,10 @@ https://setoran.massbim.my.id`;
     const ALT: [number,number,number] = isLight ? [250, 248, 255] : [245, 243, 255];
     const SUMMARY_BG: [number,number,number] = isLight ? [245, 243, 255] : [237, 233, 254];
 
-    const FOOTER_FULL =
-      'Dokumen ini dihasilkan secara sistematis oleh platform Setoranku (https://setoran.massbim.my.id). ' +
+    const FOOTER_DISCLAIMER =
+      'Dokumen ini dihasilkan secara sistematis oleh platform Setoranku. ' +
       'Segala perubahan data setelah waktu pencetakan tidak tertera pada dokumen ini. — Kelola Keuangan dengan Cerdas.';
+    const FOOTER_URL = 'https://setoran.massbim.my.id';
 
     const POST_TABLE_HEIGHT = 113;
 
@@ -118,14 +119,27 @@ https://setoran.massbim.my.id`;
     const nowDate = fmtDate(now);
     const nowTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
+    // Footer: disclaimer (italic) + URL (bold) + page number — guaranteed to fit
     const drawFooter = (pageNum: number) => {
+      const disclaimerLines = doc.splitTextToSize(FOOTER_DISCLAIMER, pageW - 28);
+      const totalLines = disclaimerLines.length + 1; // +1 for URL line
+      const lineH = 3.5;
+      const blockH = totalLines * lineH + 2;
+      const startY = FOOTER_Y - blockH;
+
       doc.setFontSize(6.5);
       doc.setFont('helvetica', 'italic');
-      doc.setTextColor(160, 160, 160);
-      const footerLines = doc.splitTextToSize(FOOTER_FULL, pageW - 28);
-      const footerTextY = FOOTER_Y - (footerLines.length - 1) * 3.5;
-      doc.text(footerLines, pageW / 2, footerTextY, { align: 'center' });
+      doc.setTextColor(150, 150, 150);
+      disclaimerLines.forEach((line: string, i: number) => {
+        doc.text(line, pageW / 2, startY + i * lineH, { align: 'center' });
+      });
+      // URL bold
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(HDR[0], HDR[1], HDR[2]);
+      doc.text(FOOTER_URL, pageW / 2, startY + disclaimerLines.length * lineH + 1.5, { align: 'center' });
+      // Page number
       doc.setFont('helvetica', 'normal');
+      doc.setTextColor(150, 150, 150);
       doc.text(`Halaman ${pageNum} dari {TOTAL}`, pageW - 14, FOOTER_Y, { align: 'right' });
     };
 
@@ -227,11 +241,12 @@ https://setoran.massbim.my.id`;
 
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
+      // cover placeholder with bg color (not white)
       doc.setFillColor(255, 255, 255);
-      doc.rect(pageW - 52, FOOTER_Y - 5, 52, 7, 'F');
+      doc.rect(pageW - 58, FOOTER_Y - 5, 58, 7, 'F');
       doc.setFontSize(6.5);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(160, 160, 160);
+      doc.setTextColor(150, 150, 150);
       doc.text(`Halaman ${i} dari ${pageCount}`, pageW - 14, FOOTER_Y, { align: 'right' });
     }
 
