@@ -55,13 +55,6 @@ A premium personal finance web app for tracking daily income and expenses. Built
 - **Cross-tab sync** — changes in one tab appear immediately in all other open tabs
 - **Auto cleanup** — listeners are properly unsubscribed on logout and unmount
 
-### 📐 Fully Responsive
-- **Adaptive breakpoints** — `sm` (≥640px), `md` (≥768px), `lg` (≥1024px)
-- **Scrollable filter pills** — horizontal scroll on narrow screens, no text clipping
-- **Dynamic grids** — stat cards, quick stats, and analytics auto-adjust column count
-- **Dynamic padding** — main content padding scales with screen size
-- **Auto-hide bottom nav** — mobile nav slides away on scroll down, reappears on scroll up
-
 ### 📄 Professional PDF Reports
 - **Theme-synced** — PDF header and table colors match your active theme (violet dark or violet light)
 - **Two-pass page numbering** — "Halaman X dari Y" on every page
@@ -77,8 +70,17 @@ A premium personal finance web app for tracking daily income and expenses. Built
 
 ### 🔐 Account Security
 - **Ganti Password** — form reauthentication + update password di halaman Profil
-- **Kategori terkunci** — "Lainnya" tidak bisa dihapus untuk menjaga integritas data
+- **Kategori sistem terlindungi** — "Lainnya" tidak bisa dihapus; badge "sistem" menggantikan tombol hapus
+- **Reset Duplikat** — deduplicate categories button in Kelola Kategori; system categories stay safe
 - **Konfirmasi hapus** — alert sebelum menghapus kategori dengan pesan peringatan jelas
+
+### 📐 Fully Responsive
+- **Adaptive breakpoints** — `sm` (≥640px), `md` (≥768px), `lg` (≥1024px)
+- **Scrollable filter pills** — horizontal scroll on narrow screens, no text clipping
+- **Dynamic grids** — stat cards, quick stats, and analytics auto-adjust column count
+- **Dynamic padding** — main content padding scales with screen size
+- **Auto-hide bottom nav** — mobile nav slides away on scroll down, reappears on scroll up
+- **Sticky top nav** — header always visible while scrolling, never hidden
 
 ---
 

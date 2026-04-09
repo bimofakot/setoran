@@ -79,6 +79,7 @@ Setiap kategori disimpan sebagai dokumen terpisah di Firestore, bukan sebagai ar
 ### 🔐 Keamanan Akun
 - **Ganti Password** — form reauthentication + update password di halaman Profil
 - **Hapus kategori bebas** — semua kategori bisa dihapus; jika koleksi kosong, seed berjalan otomatis sebagai pengaman
+- **Reset Duplikat** — tombol deduplicate kategori di halaman Kelola Kategori; kategori sistem tetap terlindungi
 - **Konfirmasi hapus** — alert sebelum menghapus kategori
 
 ### 📐 Responsif di Semua Ukuran Layar
@@ -87,6 +88,7 @@ Setiap kategori disimpan sebagai dokumen terpisah di Firestore, bukan sebagai ar
 - **Grid dinamis** — stat cards, quick stats, dan analitik menyesuaikan kolom otomatis
 - **Padding dinamis** — konten utama menyesuaikan ukuran layar secara otomatis
 - **Auto-hide bottom nav** — menu bawah menyembunyikan diri saat scroll ke bawah, muncul kembali saat scroll ke atas
+- **Sticky top nav** — navbar atas selalu terlihat saat scroll, tidak pernah hilang
 
 ---
 
