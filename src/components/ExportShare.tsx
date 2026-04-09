@@ -179,7 +179,7 @@ https://setoran.massbim.my.id`;
       body: tableData,
       startY: 50,
       margin: { bottom: MARGIN_BOTTOM + 6 },
-      styles: { fontSize: 8, cellPadding: 4 },
+      styles: { fontSize: 8, cellPadding: 4, textColor: [30, 16, 37] },
       headStyles: { fillColor: HDR, textColor: 255, fontStyle: 'bold', halign: 'center' },
       alternateRowStyles: { fillColor: ALT },
       columnStyles: {

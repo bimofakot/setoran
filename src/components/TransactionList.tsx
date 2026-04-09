@@ -46,8 +46,8 @@ export const TransactionList = ({ transactions, onEdit, onDelete }: TransactionL
         <div className="w-16 h-16 bg-white/3 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/06">
           <span className="text-3xl">📭</span>
         </div>
-        <p className="text-slate-400 font-semibold">Belum ada transaksi</p>
-        <p className="text-slate-600 text-sm mt-1">Mulai catat pemasukan atau pengeluaran kamu</p>
+        <p className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Belum ada transaksi</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Mulai catat pemasukan atau pengeluaran kamu</p>
       </div>
     );
   }
@@ -69,24 +69,27 @@ export const TransactionList = ({ transactions, onEdit, onDelete }: TransactionL
             {/* Date header */}
             <div className="flex items-center justify-between mb-2.5 px-1">
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{dateKey}</p>
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)' }} />
+                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{dateKey}</p>
               </div>
               <div className="flex gap-3 text-xs font-semibold">
-                {dayIncome  > 0 && <span className="text-emerald-400">+{formatCurrency(dayIncome)}</span>}
-                {dayExpense > 0 && <span className="text-red-400">−{formatCurrency(dayExpense)}</span>}
+                {dayIncome  > 0 && <span style={{ color: 'var(--green-light)' }}>+{formatCurrency(dayIncome)}</span>}
+                {dayExpense > 0 && <span style={{ color: 'var(--red-light)' }}>−{formatCurrency(dayExpense)}</span>}
               </div>
             </div>
 
             {/* Rows */}
-            <div className="rounded-xl overflow-hidden border border-white/06 divide-y divide-white/04">
+            <div className="rounded-xl overflow-hidden border divide-y" style={{ borderColor: 'var(--border)' }}>
               {dayTx.map((t, idx) => {
                 const emoji = getCategoryEmoji(t.category);
                 const isEmoji = emoji.length > 1;
                 return (
                   <div
                     key={t.id}
-                    className={`flex items-center gap-3 px-4 py-3.5 group transition-colors hover:bg-white/[0.03] ${idx % 2 === 1 ? 'bg-white/[0.012]' : ''}`}
+                    className={`flex items-center gap-3 px-4 py-3.5 group transition-colors`}
+                    style={{ background: idx % 2 === 1 ? 'var(--bg-subtle)' : 'transparent' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = idx % 2 === 1 ? 'var(--bg-subtle)' : 'transparent')}
                   >
                     {/* Category icon */}
                     <div className={`cat-icon shrink-0 ${
@@ -103,9 +106,9 @@ export const TransactionList = ({ transactions, onEdit, onDelete }: TransactionL
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-200 truncate">{t.category}</p>
-                      {t.description && <p className="text-xs text-slate-500 truncate mt-0.5">{t.description}</p>}
-                      <p className="text-xs text-slate-600 mt-0.5">
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{t.category}</p>
+                      {t.description && <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-secondary)' }}>{t.description}</p>}
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                         {new Date(t.date).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
