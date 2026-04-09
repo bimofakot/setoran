@@ -1,388 +1,150 @@
-# Keuanganku - Personal Finance Management App
+# Setoranku — Aplikasi Keuangan Pribadi
 
-**Read this in:** [English](README.md) | [Bahasa Indonesia](README.id.md)
+**Baca dalam:** [English](README.md) | [Bahasa Indonesia](README.id.md)
 
-A modern web application for tracking daily income and expenses with beautiful and responsive design. Built using React, TypeScript, Tailwind CSS, and Firebase for secure cloud data storage.
+Aplikasi web modern untuk mencatat pemasukan dan pengeluaran harian. Dibangun dengan React, TypeScript, Tailwind CSS, dan Firebase — kini bisa diinstal sebagai aplikasi di Android (PWA).
 
-## 🌟 Key Features
+---
 
-- **📱 Responsive Design**: Perfect display on desktop, tablet, and mobile devices
-- **💾 Cloud Storage**: Data securely stored in Firebase Firestore
-- **🔐 Authentication**: Secure login and registration with Firebase Auth
-- **💰 Transaction Tracking**: Record income and expenses with comprehensive categories
-- **📊 Dashboard Analytics**: View financial summaries and statistics
-- **🎯 Date Filtering**: Filter by day, week, month, or year
-- **📥 Data Export**: Export reports in PDF and Excel (XLSX) formats
-- **📤 Share Reports**: Share financial summaries via WhatsApp
-- **🎨 Modern UI**: Beautiful interface with smooth animations
-- **🌓 Responsive Theme**: Automatically adapts to device theme preferences
-- **⏰ Accurate Time Sync**: Transactions saved with current timestamp (WIB)
-- **🌐 Indonesian Error Messages**: User-friendly login error handling in Bahasa Indonesia
+## ✨ Fitur Utama
+
+### 💾 Data & Keamanan
+- **Penyimpanan per-user** — Data transaksi tersimpan di path `users/{userId}/transactions/`, terisolasi antar pengguna
+- **Soft-Delete** — Transaksi yang dihapus tidak benar-benar hilang, hanya ditandai `isDeleted: true`
+- **Autentikasi Firebase** — Login & registrasi aman dengan Firebase Auth
+- **Kategori Custom** — Setiap user mendapat kategori default (Gaji, Makanan, dll) yang tersimpan di `users/{userId}/categories/` dan bisa dikembangkan
+
+### 📱 Progressive Web App (PWA)
+- **Bisa diinstal di Android** — Muncul tombol "Install App" otomatis di browser
+- **Offline-ready** — Service worker via Workbox meng-cache aset penting
+- **Tampil seperti native app** — Mode `standalone`, tanpa address bar
+
+### 🧾 Input Transaksi yang Cerdas
+- **Format Rupiah otomatis** — Angka diformat real-time saat diketik (contoh: `100000` → `100.000`)
+- **Kategori dinamis** — Dropdown kategori otomatis berubah sesuai tab Pemasukan/Pengeluaran
+- **Validasi ketat** — Input hanya menerima angka, field wajib divalidasi sebelum submit
+
+### 📊 Dashboard & Laporan
+- **Kartu ringkasan interaktif** — Pemasukan, Pengeluaran, Saldo dengan efek hover animasi
+- **Filter waktu** — Hari ini, minggu ini, bulan ini, tahun ini, atau rentang custom
+- **Daftar transaksi** — Dikelompokkan per hari, zebra striping untuk keterbacaan
+- **Export PDF** — Laporan rapi: judul, ringkasan, tabel transaksi dengan warna header biru
+- **Share WhatsApp** — Kirim ringkasan keuangan langsung ke WhatsApp dengan format pesan yang bersih
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19 with TypeScript
-- **Styling**: Tailwind CSS v4 + Custom Components
-- **Icons**: Lucide React
-- **Backend/Database**: Firebase (Authentication + Firestore)
-- **Build Tool**: Vite
-- **Package Manager**: npm
-- **PDF Generation**: jsPDF + jspdf-autotable
-- **Excel Export**: XLSX
+| Layer | Teknologi |
+|---|---|
+| Frontend | React 19 + TypeScript |
+| Styling | Tailwind CSS v4 |
+| Icons | Lucide React |
+| Backend | Firebase Auth + Firestore |
+| Build | Vite 7 |
+| PWA | vite-plugin-pwa (Workbox) |
+| PDF | jsPDF + jspdf-autotable |
+| Excel | XLSX |
 
-## 📋 Requirements
+---
 
-- Node.js 18+
-- npm or yarn
-- Firebase account (for database and hosting)
+## 🚀 Instalasi
 
-## 🚀 Installation & Setup
-
-### 1. Clone Repository
+### 1. Clone & Install
 
 ```bash
 git clone https://github.com/your-username/setoran.git
 cd setoran
+npm install --legacy-peer-deps
 ```
 
-### 2. Install Dependencies
+> `--legacy-peer-deps` diperlukan karena vite-plugin-pwa belum secara resmi mendukung Vite 7.
 
-```bash
-npm install
-npm install jspdf jspdf-autotable xlsx
-```
+### 2. Konfigurasi Firebase
 
-### 3. Firebase Setup
-
-#### a. Create Firebase Project
-
-1. Open [Firebase Console](https://console.firebase.google.com)
-2. Click "Create Project" and follow the steps
-3. Select or create a location for Firestore Database
-4. Enable Authentication with Email/Password method
-
-#### b. Get Firebase Configuration
-
-1. In Firebase Console, select your project
-2. Click ⚙️ (Settings) > Project Settings
-3. Scroll down to "Your apps" section
-4. Click `</>` icon for web app
-5. Copy the Firebase configuration
-
-#### c. Setup Environment Variables
-
-1. Copy `.env.example` to `.env.local`:
-
-```bash
-cp .env.example .env.local
-```
-
-2. Edit `.env.local` and enter your Firebase configuration:
+Salin `.env.example` ke `.env.local` lalu isi dengan konfigurasi Firebase project kamu:
 
 ```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
 ```
 
-### 4. Setup Firestore Database
-
-1. In Firebase Console, open Firestore Database
-2. Click "Create Database"
-3. Select "Start in test mode" for development (change rules later for production)
-4. Select the nearest location
-
-#### Firestore Security Rules (for testing):
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /transactions/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
-
-### 5. Run Development Server
+### 3. Jalankan
 
 ```bash
 npm run dev
 ```
-
-The application will open at `http://localhost:5173`
-
-## 💻 Development
-
-### Project Structure
-
-```
-src/
-├── components/      # Reusable UI components
-├── hooks/          # Custom React hooks
-├── lib/            # Firebase configuration
-├── pages/          # Page components
-├── types/          # TypeScript type definitions
-├── utils/          # Utility functions
-├── App.tsx         # Main App component
-├── main.tsx        # Entry point
-└── index.css       # Global styles
-```
-
-### Available Scripts
-
-```bash
-# Development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Lint code
-npm run lint
-```
-
-## 🔐 Security Best Practices
-
-### Environment Variables
-- **Never commit `.env` files to git** - Use `.env.example` as a template
-- Always use `import.meta.env.VITE_*` for client-side environment variables
-- Never expose sensitive keys in code
-
-### GitHub Secrets for Firebase API Keys
-For production deployments, store Firebase configuration in GitHub Secrets:
-1. Go to your repository Settings > Secrets and variables > Actions
-2. Add the following secrets:
-   - `VITE_FIREBASE_API_KEY`
-   - `VITE_FIREBASE_AUTH_DOMAIN`
-   - `VITE_FIREBASE_PROJECT_ID`
-   - `VITE_FIREBASE_STORAGE_BUCKET`
-   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
-   - `VITE_FIREBASE_APP_ID`
-3. In your GitHub Actions workflow, use these secrets to populate environment variables during build
-
-### Firebase Rules
-
-**Development (Test mode):**
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
-
-**Production (Recommended):**
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /transactions/{transaction} {
-      allow read, write: if request.auth.uid == resource.data.userId;
-      allow read, write: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
-  }
-}
-```
-
-## 🚀 Deploy to Firebase Hosting
-
-### 1. Install Firebase CLI
-
-```bash
-npm install -g firebase-tools
-```
-
-### 2. Login to Firebase
-
-```bash
-firebase login
-```
-
-### 3. Initialize Firebase Project
-
-```bash
-firebase init hosting
-```
-
-Answer the prompts:
-- Choose your Firebase project: (select your project)
-- What do you want to use as your public directory? `dist`
-- Configure as a single-page app? `Yes`
-- Set up automatic builds and deploys with GitHub? `No` (optional)
-
-### 4. Build & Deploy
-
-```bash
-# Build for production
-npm run build
-
-# Deploy to Firebase Hosting
-firebase deploy
-```
-
-Your application URL will appear in the console output.
-
-### Update Deployment
-
-Each time you make changes:
-
-```bash
-npm run build
-firebase deploy
-```
-
-## 📱 Responsive Design
-
-The application is fully responsive and works perfectly on:
-- 📱 Mobile (iOS & Android)
-- 📱 Tablet
-- 💻 Desktop & Laptop
-
-Tailwind breakpoints used:
-- `sm`: 640px
-- `md`: 768px
-- `lg`: 1024px
-- `xl`: 1280px
-
-## 🎨 Customization
-
-### Change Theme Colors
-
-Edit `src/tailwind.config.js`:
-
-```javascript
-theme: {
-  extend: {
-    colors: {
-      primary: "#3b82f6",    // Change primary color
-      secondary: "#10b981",  // Change secondary color
-      danger: "#ef4444",     // Change danger color
-    },
-  },
-}
-```
-
-### Change Transaction Categories
-
-Edit `src/components/TransactionForm.tsx`:
-
-```javascript
-const incomeCategories = ['Gaji', 'Freelance', ...];
-const expenseCategories = ['Makanan & Minuman', ...];
-```
-
-## 🐛 Troubleshooting
-
-### Build Error
-```bash
-# Clear cache and rebuild
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
-
-### Firebase Connection Issues
-- Verify `.env.local` is correct
-- Ensure Firebase project is activated
-- Check that Firestore Database has been created
-
-### CSS Not Loading
-- Clear browser cache (Ctrl+Shift+Delete)
-- Verify Tailwind CSS is installed: `npm list tailwindcss`
-
-## 📖 Further Documentation
-
-- [React Documentation](https://react.dev)
-- [Firebase Documentation](https://firebase.google.com/docs)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Vite Documentation](https://vitejs.dev)
-- [Project Technical Details](docs/TECHNICAL_LOG.md)
-
-## 📝 License
-
-MIT License - Free to use for personal and commercial projects
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 💬 Support
-
-If you have any questions or need help, please create an issue on GitHub or contact us via email.
 
 ---
 
-**Built with ❤️ for better personal finance management**
+## 🔐 Firestore Security Rules
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🏗️ Struktur Project
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── components/
+│   ├── TransactionForm.tsx   # Form input dengan masking Rupiah
+│   ├── TransactionList.tsx   # Daftar transaksi dengan zebra striping
+│   ├── Summary.tsx           # Kartu ringkasan keuangan
+│   ├── DateRangeFilter.tsx   # Filter periode
+│   ├── ExportShare.tsx       # Export PDF & share WhatsApp
+│   └── ui.tsx                # Komponen UI dasar
+├── hooks/
+│   ├── useTransactions.ts    # CRUD transaksi (path per-user, soft-delete)
+│   ├── useAuth.ts            # Autentikasi + inisialisasi kategori
+│   └── useCategories.ts      # Baca kategori dari Firestore
+├── lib/
+│   ├── firebase.ts           # Inisialisasi Firebase
+│   └── userSetup.ts          # Seed kategori default untuk user baru
+├── pages/
+│   ├── Dashboard.tsx
+│   └── AuthPage.tsx
+├── types/index.ts
+└── utils/helpers.ts
+```
+
+---
+
+## 🚢 Deploy ke Firebase Hosting
+
+```bash
+npm run build
+firebase deploy
+```
+
+CI/CD via GitHub Actions sudah dikonfigurasi — setiap push ke `main` otomatis build dan deploy.
+
+---
+
+## 📋 Scripts
+
+```bash
+npm run dev        # Development server
+npm run build      # Production build
+npm run preview    # Preview build (PWA aktif di sini)
+npm run lint       # Lint kode
+```
+
+---
+
+## 📝 Lisensi
+
+MIT — bebas digunakan untuk keperluan pribadi maupun komersial.
