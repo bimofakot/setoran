@@ -3,8 +3,13 @@ import { useProfile } from '../hooks/useProfile';
 import { useCategories } from '../hooks/useCategories';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui';
-import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2, MessageCircle, LogOut } from 'lucide-react';
+import { User, MapPin, AtSign, Save, Plus, Trash2, Tag, CheckCircle2, MessageCircle, LogOut, Mail, X } from 'lucide-react';
 import { AVATARS, getAvatarById } from '../lib/avatars';
+
+// ── CONTACT CONFIG — update these when contact info changes ──
+const SUPPORT_WA  = '6281234567890';   // nomor WA admin (tanpa +)
+const SUPPORT_EMAIL = 'support@massbim.my.id'; // email support
+// ────────────────────────────────────────────────────────────
 
 const AvatarDisplay = ({ avatarId, size = 48 }: { avatarId: string; size?: number }) => {
   const avatar = getAvatarById(avatarId);
@@ -25,6 +30,7 @@ export const ProfilePage = () => {
   const [newCat, setNewCat] = useState({ name: '', type: 'expense' as 'income' | 'expense' });
   const [addingCat, setAddingCat] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [showContactMenu, setShowContactMenu] = useState(false);
 
   if (!loading && form.displayName === '' && profile.displayName !== '') {
     setForm(profile);
@@ -46,10 +52,38 @@ export const ProfilePage = () => {
     setAddingCat(false);
   };
 
-  const handleContact = () => {
+  const handleContactWA = () => {
     const name = form.displayName || user?.email || 'Pengguna';
-    const msg = `Halo Admin Keuanganku! 👋\n\nNama: ${name}\nInfo website dari: setoran.massbim.my.id\nKendala: [jelaskan masalah Anda di sini]\n\nTerima kasih!`;
-    window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank');
+    const msg =
+`Halo Tim Keuanganku 👋
+
+Saya ingin menyampaikan pertanyaan/kendala berikut:
+
+• Nama       : ${name}
+• Sumber info: (Contoh: GitHub / LinkedIn / Teman / Google)
+• Kendala    : [Jelaskan masalah atau pertanyaan Anda di sini]
+
+Terima kasih atas bantuannya!
+— Dikirim dari setoran.massbim.my.id`;
+    window.open(`https://wa.me/${SUPPORT_WA}?text=${encodeURIComponent(msg)}`, '_blank');
+    setShowContactMenu(false);
+  };
+
+  const handleContactEmail = () => {
+    const name = form.displayName || user?.email || 'Pengguna';
+    const subject = encodeURIComponent('Bantuan - Keuanganku App');
+    const body = encodeURIComponent(
+`Halo Tim Keuanganku,
+
+Nama       : ${name}
+Sumber info: (Contoh: GitHub / LinkedIn / Teman / Google)
+Kendala    : [Jelaskan masalah atau pertanyaan Anda di sini]
+
+Terima kasih,
+${name}`
+    );
+    window.open(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`, '_blank');
+    setShowContactMenu(false);
   };
 
   const handleLogout = async () => { try { await logout(); } catch (e) { console.error(e); } };
@@ -239,12 +273,51 @@ export const ProfilePage = () => {
           </div>
           <div>
             <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>Bantuan & Dukungan</h2>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Ada kendala? Hubungi kami langsung</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Ada pertanyaan atau kendala? Tim kami siap membantu</p>
           </div>
         </div>
-        <Button variant="success" fullWidth onClick={handleContact}>
-          <MessageCircle size={15} /> Hubungi Kami via WhatsApp
-        </Button>
+
+        {/* Contact channel picker */}
+        {showContactMenu ? (
+          <div className="rounded-xl border p-4 space-y-2 animate-fade-up" style={{ background: 'var(--bg-subtle)', borderColor: 'var(--border)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Pilih Saluran Bantuan</p>
+              <button onClick={() => setShowContactMenu(false)} className="p-1 rounded-lg" style={{ color: 'var(--text-muted)' }}>
+                <X size={14} />
+              </button>
+            </div>
+            <button onClick={handleContactWA}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
+              style={{ background: 'rgba(5,150,105,0.06)', borderColor: 'rgba(5,150,105,0.2)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(5,150,105,0.12)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(5,150,105,0.06)')}>
+              <div className="w-9 h-9 rounded-xl bg-green-500/15 flex items-center justify-center shrink-0">
+                <MessageCircle size={16} className="text-green-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>WhatsApp</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Respons cepat, hari kerja 08.00–17.00</p>
+              </div>
+            </button>
+            <button onClick={handleContactEmail}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
+              style={{ background: 'rgba(109,40,217,0.06)', borderColor: 'rgba(109,40,217,0.15)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(109,40,217,0.12)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(109,40,217,0.06)')}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(109,40,217,0.1)' }}>
+                <Mail size={16} style={{ color: 'var(--accent)' }} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Email</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Untuk laporan detail atau lampiran dokumen</p>
+              </div>
+            </button>
+          </div>
+        ) : (
+          <Button variant="success" fullWidth onClick={() => setShowContactMenu(true)}>
+            <MessageCircle size={15} /> Hubungi Kami
+          </Button>
+        )}
 
         <hr className="my-4" style={{ borderColor: 'var(--border)' }} />
 

@@ -2,37 +2,55 @@
 
 **Read in:** [English](README.md) | [Bahasa Indonesia](README.id.md)
 
-A modern web app for tracking daily income and expenses. Built with React, TypeScript, Tailwind CSS, and Firebase — installable as a native-like app on Android (PWA).
+> 🌐 **Live:** [setoran.massbim.my.id](https://setoran.massbim.my.id)
+
+A premium personal finance web app for tracking daily income and expenses. Built with React 19, TypeScript, Tailwind CSS v4, and Firebase — installable as a native-like PWA on Android.
 
 ---
 
 ## ✨ Features
 
+### 🎨 Premium UI/UX
+- **Three-theme system** — Dark, Light (Pale Lavender Clay), and System Default — persisted across sessions
+- **Sidebar navigation** (desktop) + **bottom tab bar** (mobile) — native app feel
+- **6 custom geometric avatars** — personalize your profile with hand-crafted SVG avatars
+- **Smooth animations** — fade-up, shimmer skeleton, pulse-glow, and micro-interactions throughout
+- **Zero pure white** — light mode uses a curated Pale Lavender Clay palette for an elegant, premium look
+
 ### 💾 Data & Security
-- **Per-user storage** — Transactions stored at `users/{userId}/transactions/`, fully isolated between users
-- **User profile** — `fullName`, `username`, `email` stored at `users/{userId}` on registration; `displayName` synced to Firebase Auth
-- **Soft-delete** — Deleted transactions are flagged `isDeleted: true`, never permanently removed
-- **Firebase Auth** — Secure login with email or username; registration requires unique username (alphanumeric + underscore only)
-- **Custom categories** — Each user gets seeded default categories (Salary, Food, etc.) stored at `users/{userId}/categories/` and can be extended
+- **Per-user isolation** — all data stored at `users/{userId}/...`, fully isolated between accounts
+- **Soft-delete** — deleted transactions flagged `isDeleted: true`, never permanently removed
+- **Firebase Auth** — login with email or username; registration enforces unique alphanumeric username
+- **Custom categories** — per-user CRUD categories seeded with smart defaults on signup
 
 ### 📱 Progressive Web App (PWA)
-- **Installable on Android** — "Add to Home Screen" prompt appears automatically in browser
+- **Installable on Android** — "Add to Home Screen" prompt via browser
 - **Offline-ready** — Workbox service worker caches critical assets
-- **Standalone mode** — Runs without browser address bar, feels like a native app
+- **Standalone mode** — runs without browser chrome, feels native
 
 ### 🧾 Smart Transaction Input
-- **Real-time Rupiah formatting** — Numbers formatted as you type (`100000` → `100.000`)
-- **Dynamic categories** — Dropdown automatically filters by Income / Expense tab
-- **Custom category** — Selecting "Lainnya" reveals a free-text input for custom category names
-- **Strict validation** — Only digits accepted; required fields validated before submit
+- **Real-time Rupiah formatting** — `100000` → `100.000` as you type
+- **Category emoji mapping** — 🍜 Makanan, 💼 Gaji, 🚗 Transport, and more
+- **Custom category** — "Lainnya" reveals free-text input
+- **Mobile-first actions** — Edit/Delete always visible on touch devices (no hover dependency)
 
-### 📊 Dashboard & Reports
-- **Interactive summary cards** — Income, Expense, Balance with hover animation
+### 📊 Dashboard & Analytics
+- **Summary cards** — Income, Expense, Balance with progress bars and glow effects
+- **Quick stats** — Average per transaction, largest transaction, saving ratio
+- **Analytics tab** — Trend line chart, category pie chart, monthly comparison bars (pure SVG, no library)
 - **Time filters** — Today, this week, this month, this year, or custom date range
-- **Transaction list** — Grouped by day with timestamp (date + time) and zebra striping
-- **PDF export** — Professional report: branded header, meta with aligned labels, transaction table (oldest → newest, sticky header per page), neraca saldo summary, signature area, formal disclaimer, and branding footer on every page
-- **WhatsApp share** — Full transaction breakdown per line with totals and app link
-- **Copy text** — Plain-text report with per-transaction detail, safe to paste anywhere
+
+### 📄 Professional PDF Reports
+- **Theme-synced** — PDF header and table colors match your active theme (violet dark or violet light)
+- **Two-pass page numbering** — "Halaman X dari Y" on every page
+- **Signature area** — city, date, owner name on last page only
+- **Formal disclaimer** — auto word-wrapped footer on every page
+- **Excel export** — full transaction data with summary sheet
+
+### 💬 Multi-Channel Support
+- **Hubungi Kami** — choose between WhatsApp or Email
+- **Auto-filled message** — name, source, and issue template pre-populated
+- **Professional copy** — clear, formal Indonesian language
 
 ---
 
@@ -56,7 +74,7 @@ A modern web app for tracking daily income and expenses. Built with React, TypeS
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-username/setoran.git
+git clone https://github.com/bimofakot/setoran.git
 cd setoran
 npm install --legacy-peer-deps
 ```
@@ -90,8 +108,15 @@ npm run dev
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /users/{userId} {
+      allow read: if true; // for username lookup during login/register
+      allow write: if request.auth.uid == userId;
+      match /transactions/{id} {
+        allow read, write: if request.auth.uid == userId;
+      }
+      match /categories/{id} {
+        allow read, write: if request.auth.uid == userId;
+      }
     }
   }
 }
@@ -104,22 +129,27 @@ service cloud.firestore {
 ```
 src/
 ├── components/
+│   ├── Analytics.tsx         # SVG charts (trend, pie, bar)
+│   ├── DateRangeFilter.tsx   # Period filter with custom range
+│   ├── ExportShare.tsx       # PDF/Excel export & WA/copy share
+│   ├── Summary.tsx           # Financial summary + quick stats cards
 │   ├── TransactionForm.tsx   # Input form with Rupiah masking
-│   ├── TransactionList.tsx   # Transaction list with zebra striping
-│   ├── Summary.tsx           # Financial summary cards
-│   ├── DateRangeFilter.tsx   # Period filter
-│   ├── ExportShare.tsx       # PDF export & WhatsApp share
-│   └── ui.tsx                # Base UI components
+│   ├── TransactionList.tsx   # Grouped list with category emoji
+│   └── ui.tsx                # Button, Input, Select, Dialog, Badge
 ├── hooks/
-│   ├── useTransactions.ts    # CRUD (per-user path, soft-delete)
-│   ├── useAuth.ts            # Auth + category initialization
-│   └── useCategories.ts      # Read categories from Firestore
+│   ├── useAuth.ts            # Auth state + category seeding
+│   ├── useCategories.ts      # Category CRUD from Firestore
+│   ├── useProfile.ts         # Profile read/write with avatarId
+│   └── useTransactions.ts    # Transaction CRUD (soft-delete)
 ├── lib/
+│   ├── avatars.ts            # 6 SVG avatar definitions
 │   ├── firebase.ts           # Firebase initialization
-│   └── userSetup.ts          # Seed default categories for new users
+│   ├── ThemeContext.tsx      # Dark/Light/System theme provider
+│   └── userSetup.ts          # Seed default categories on signup
 ├── pages/
-│   ├── Dashboard.tsx
-│   └── AuthPage.tsx
+│   ├── AuthPage.tsx          # Login + Signup with show/hide password
+│   ├── Dashboard.tsx         # Main layout with sidebar + bottom nav
+│   └── ProfilePage.tsx       # Profile, avatar, categories, support
 ├── types/index.ts
 └── utils/helpers.ts
 ```
@@ -133,7 +163,7 @@ npm run build
 firebase deploy
 ```
 
-CI/CD via GitHub Actions is configured — every push to `main` automatically builds and deploys.
+CI/CD via GitHub Actions — every push to `main` automatically builds and deploys.
 
 ---
 
