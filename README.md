@@ -1,41 +1,44 @@
-# Setoranku — Aplikasi Keuangan Pribadi
+# Setoranku — Personal Finance App
 
-**Baca dalam:** [English](README.md) | [Bahasa Indonesia](README.id.md)
+**Read in:** [English](README.md) | [Bahasa Indonesia](README.id.md)
 
-Aplikasi web modern untuk mencatat pemasukan dan pengeluaran harian. Dibangun dengan React, TypeScript, Tailwind CSS, dan Firebase — kini bisa diinstal sebagai aplikasi di Android (PWA).
+A modern web app for tracking daily income and expenses. Built with React, TypeScript, Tailwind CSS, and Firebase — installable as a native-like app on Android (PWA).
 
 ---
 
-## ✨ Fitur Utama
+## ✨ Features
 
-### 💾 Data & Keamanan
-- **Penyimpanan per-user** — Data transaksi tersimpan di path `users/{userId}/transactions/`, terisolasi antar pengguna
-- **Soft-Delete** — Transaksi yang dihapus tidak benar-benar hilang, hanya ditandai `isDeleted: true`
-- **Autentikasi Firebase** — Login & registrasi aman dengan Firebase Auth
-- **Kategori Custom** — Setiap user mendapat kategori default (Gaji, Makanan, dll) yang tersimpan di `users/{userId}/categories/` dan bisa dikembangkan
+### 💾 Data & Security
+- **Per-user storage** — Transactions stored at `users/{userId}/transactions/`, fully isolated between users
+- **User profile** — `fullName`, `username`, `email` stored at `users/{userId}` on registration; `displayName` synced to Firebase Auth
+- **Soft-delete** — Deleted transactions are flagged `isDeleted: true`, never permanently removed
+- **Firebase Auth** — Secure login with email or username; registration requires unique username (alphanumeric + underscore only)
+- **Custom categories** — Each user gets seeded default categories (Salary, Food, etc.) stored at `users/{userId}/categories/` and can be extended
 
 ### 📱 Progressive Web App (PWA)
-- **Bisa diinstal di Android** — Muncul tombol "Install App" otomatis di browser
-- **Offline-ready** — Service worker via Workbox meng-cache aset penting
-- **Tampil seperti native app** — Mode `standalone`, tanpa address bar
+- **Installable on Android** — "Add to Home Screen" prompt appears automatically in browser
+- **Offline-ready** — Workbox service worker caches critical assets
+- **Standalone mode** — Runs without browser address bar, feels like a native app
 
-### 🧾 Input Transaksi yang Cerdas
-- **Format Rupiah otomatis** — Angka diformat real-time saat diketik (contoh: `100000` → `100.000`)
-- **Kategori dinamis** — Dropdown kategori otomatis berubah sesuai tab Pemasukan/Pengeluaran
-- **Validasi ketat** — Input hanya menerima angka, field wajib divalidasi sebelum submit
+### 🧾 Smart Transaction Input
+- **Real-time Rupiah formatting** — Numbers formatted as you type (`100000` → `100.000`)
+- **Dynamic categories** — Dropdown automatically filters by Income / Expense tab
+- **Custom category** — Selecting "Lainnya" reveals a free-text input for custom category names
+- **Strict validation** — Only digits accepted; required fields validated before submit
 
-### 📊 Dashboard & Laporan
-- **Kartu ringkasan interaktif** — Pemasukan, Pengeluaran, Saldo dengan efek hover animasi
-- **Filter waktu** — Hari ini, minggu ini, bulan ini, tahun ini, atau rentang custom
-- **Daftar transaksi** — Dikelompokkan per hari, zebra striping untuk keterbacaan
-- **Export PDF** — Laporan rapi: judul, ringkasan, tabel transaksi dengan warna header biru
-- **Share WhatsApp** — Kirim ringkasan keuangan langsung ke WhatsApp dengan format pesan yang bersih
+### 📊 Dashboard & Reports
+- **Interactive summary cards** — Income, Expense, Balance with hover animation
+- **Time filters** — Today, this week, this month, this year, or custom date range
+- **Transaction list** — Grouped by day with timestamp (date + time) and zebra striping
+- **PDF export** — Professional report: branded header, meta with aligned labels, transaction table (oldest → newest, sticky header per page), neraca saldo summary, signature area, formal disclaimer, and branding footer on every page
+- **WhatsApp share** — Full transaction breakdown per line with totals and app link
+- **Copy text** — Plain-text report with per-transaction detail, safe to paste anywhere
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Teknologi |
+| Layer | Technology |
 |---|---|
 | Frontend | React 19 + TypeScript |
 | Styling | Tailwind CSS v4 |
@@ -48,7 +51,7 @@ Aplikasi web modern untuk mencatat pemasukan dan pengeluaran harian. Dibangun de
 
 ---
 
-## 🚀 Instalasi
+## 🚀 Getting Started
 
 ### 1. Clone & Install
 
@@ -58,11 +61,11 @@ cd setoran
 npm install --legacy-peer-deps
 ```
 
-> `--legacy-peer-deps` diperlukan karena vite-plugin-pwa belum secara resmi mendukung Vite 7.
+> `--legacy-peer-deps` is required because vite-plugin-pwa does not yet officially support Vite 7.
 
-### 2. Konfigurasi Firebase
+### 2. Configure Firebase
 
-Salin `.env.example` ke `.env.local` lalu isi dengan konfigurasi Firebase project kamu:
+Copy `.env.example` to `.env.local` and fill in your Firebase project credentials:
 
 ```env
 VITE_FIREBASE_API_KEY=...
@@ -73,7 +76,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=...
 VITE_FIREBASE_APP_ID=...
 ```
 
-### 3. Jalankan
+### 3. Run
 
 ```bash
 npm run dev
@@ -96,24 +99,24 @@ service cloud.firestore {
 
 ---
 
-## 🏗️ Struktur Project
+## 🏗️ Project Structure
 
 ```
 src/
 ├── components/
-│   ├── TransactionForm.tsx   # Form input dengan masking Rupiah
-│   ├── TransactionList.tsx   # Daftar transaksi dengan zebra striping
-│   ├── Summary.tsx           # Kartu ringkasan keuangan
-│   ├── DateRangeFilter.tsx   # Filter periode
-│   ├── ExportShare.tsx       # Export PDF & share WhatsApp
-│   └── ui.tsx                # Komponen UI dasar
+│   ├── TransactionForm.tsx   # Input form with Rupiah masking
+│   ├── TransactionList.tsx   # Transaction list with zebra striping
+│   ├── Summary.tsx           # Financial summary cards
+│   ├── DateRangeFilter.tsx   # Period filter
+│   ├── ExportShare.tsx       # PDF export & WhatsApp share
+│   └── ui.tsx                # Base UI components
 ├── hooks/
-│   ├── useTransactions.ts    # CRUD transaksi (path per-user, soft-delete)
-│   ├── useAuth.ts            # Autentikasi + inisialisasi kategori
-│   └── useCategories.ts      # Baca kategori dari Firestore
+│   ├── useTransactions.ts    # CRUD (per-user path, soft-delete)
+│   ├── useAuth.ts            # Auth + category initialization
+│   └── useCategories.ts      # Read categories from Firestore
 ├── lib/
-│   ├── firebase.ts           # Inisialisasi Firebase
-│   └── userSetup.ts          # Seed kategori default untuk user baru
+│   ├── firebase.ts           # Firebase initialization
+│   └── userSetup.ts          # Seed default categories for new users
 ├── pages/
 │   ├── Dashboard.tsx
 │   └── AuthPage.tsx
@@ -123,14 +126,14 @@ src/
 
 ---
 
-## 🚢 Deploy ke Firebase Hosting
+## 🚢 Deploy to Firebase Hosting
 
 ```bash
 npm run build
 firebase deploy
 ```
 
-CI/CD via GitHub Actions sudah dikonfigurasi — setiap push ke `main` otomatis build dan deploy.
+CI/CD via GitHub Actions is configured — every push to `main` automatically builds and deploys.
 
 ---
 
@@ -139,12 +142,12 @@ CI/CD via GitHub Actions sudah dikonfigurasi — setiap push ke `main` otomatis 
 ```bash
 npm run dev        # Development server
 npm run build      # Production build
-npm run preview    # Preview build (PWA aktif di sini)
-npm run lint       # Lint kode
+npm run preview    # Preview build (PWA active here)
+npm run lint       # Lint code
 ```
 
 ---
 
-## 📝 Lisensi
+## 📝 License
 
-MIT — bebas digunakan untuk keperluan pribadi maupun komersial.
+MIT — free to use for personal and commercial purposes.

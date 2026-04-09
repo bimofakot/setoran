@@ -1,30 +1,39 @@
 import { useState, useEffect } from 'react';
-import type { DateRange } from '../types';
+import type { DateRange, Transaction } from '../types';
 import { Button } from '../components/ui';
 import { TransactionForm } from '../components/TransactionForm';
 import { TransactionList } from '../components/TransactionList';
 import { Summary, QuickStats } from '../components/Summary';
 import { DateRangeFilter } from '../components/DateRangeFilter';
 import { ExportShare } from '../components/ExportShare';
+import { Analytics } from '../components/Analytics';
+import { ProfilePage } from './ProfilePage';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import { getDateRange } from '../utils/helpers';
-import { Plus, LogOut, Menu, X } from 'lucide-react';
+import { Plus, LogOut, Menu, X, UserCircle, BarChart3 } from 'lucide-react';
 
 export const Dashboard = () => {
   const { logout, user } = useAuth();
+  const { profile } = useProfile();
   const {
     transactions,
     loading,
     error,
     fetchTransactions,
     addTransaction,
+    updateTransaction,
     deleteTransaction,
   } = useTransactions();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics'>('dashboard');
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
   const [selectedRange, setSelectedRange] = useState<DateRange>('today');
+  const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | null>(null);
   const [filteredTransactions, setFilteredTransactions] = useState(transactions);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -35,31 +44,45 @@ export const Dashboard = () => {
 
   // Filter transactions based on selected range
   useEffect(() => {
-    const { startDate, endDate } = getDateRange(selectedRange);
-    const filtered = transactions.filter((t) => {
-      const transactionDate = new Date(t.date);
-      return transactionDate >= startDate && transactionDate <= endDate;
-    });
-    setFilteredTransactions(filtered);
-  }, [selectedRange, transactions]);
+    if (selectedRange === 'custom' && customRange) {
+      setFilteredTransactions(
+        transactions.filter((t) => {
+          const td = new Date(t.date);
+          return td >= customRange.start && td <= customRange.end;
+        })
+      );
+    } else {
+      const { startDate, endDate } = getDateRange(selectedRange);
+      setFilteredTransactions(
+        transactions.filter((t) => {
+          const td = new Date(t.date);
+          return td >= startDate && td <= endDate;
+        })
+      );
+    }
+  }, [selectedRange, transactions, customRange]);
 
-  const handleDateRangeChange = (
-    range: DateRange,
-    startDate?: Date,
-    endDate?: Date
-  ) => {
+  const handleDateRangeChange = (range: DateRange, startDate?: Date, endDate?: Date) => {
     setSelectedRange(range);
     if (range === 'custom' && startDate && endDate) {
-      const filtered = transactions.filter((t) => {
-        const transactionDate = new Date(t.date);
-        return transactionDate >= startDate && transactionDate <= endDate;
-      });
-      setFilteredTransactions(filtered);
+      setCustomRange({ start: startDate, end: endDate });
+    } else {
+      setCustomRange(null);
     }
   };
 
   const handleAddTransaction = async (data: any) => {
-    await addTransaction(data);
+    if (editingTransaction) {
+      await updateTransaction(editingTransaction.id, data);
+      setEditingTransaction(undefined);
+    } else {
+      await addTransaction(data);
+    }
+  };
+
+  const handleEdit = (t: Transaction) => {
+    setEditingTransaction(t);
+    setIsFormOpen(true);
   };
 
   const handleLogout = async () => {
@@ -98,8 +121,16 @@ export const Dashboard = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-4">
             <div className="text-sm text-slate-600">
-              {user?.email}
+              👋 {user?.displayName || user?.email}
             </div>
+            <Button
+              onClick={() => setShowProfile(!showProfile)}
+              variant="secondary"
+              size="sm"
+              className="gap-2"
+            >
+              <UserCircle size={16} /> Profil
+            </Button>
             <Button
               onClick={() => setIsExportOpen(true)}
               variant="secondary"
@@ -134,8 +165,17 @@ export const Dashboard = () => {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-200 bg-white p-4 space-y-3">
             <div className="text-sm text-slate-600 px-2 py-2">
-              {user?.email}
+              👋 {user?.displayName || user?.email}
             </div>
+            <Button
+              onClick={() => { setShowProfile(!showProfile); setMobileMenuOpen(false); }}
+              fullWidth
+              variant="secondary"
+              size="sm"
+              className="gap-2"
+            >
+              <UserCircle size={16} /> Profil
+            </Button>
             <Button
               onClick={() => {
                 setIsExportOpen(true);
@@ -160,8 +200,39 @@ export const Dashboard = () => {
         )}
       </div>
 
+      {/* Tab Bar */}
+      {!showProfile && (
+        <div className="bg-white border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 flex gap-1">
+            {(['dashboard', 'analytics'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {tab === 'dashboard' ? (
+                  <><span>📋</span> Dashboard</>
+                ) : (
+                  <><BarChart3 size={16} /> Analisis</>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        {showProfile ? (
+          <ProfilePage />
+        ) : activeTab === 'analytics' ? (
+          <Analytics transactions={filteredTransactions} />
+        ) : (
+          <>
         {/* Summary Cards */}
         <Summary transactions={filteredTransactions} dateLabel={getDateRangeLabel()} />
 
@@ -206,21 +277,25 @@ export const Dashboard = () => {
             </h2>
             <TransactionList
               transactions={filteredTransactions}
-              onEdit={() => {
-                // Handle edit
-              }}
+              onEdit={handleEdit}
               onDelete={deleteTransaction}
               loading={loading}
             />
           </div>
+        )}
+        </>
         )}
       </div>
 
       {/* Modals */}
       <TransactionForm
         open={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={(open) => {
+          setIsFormOpen(open);
+          if (!open) setEditingTransaction(undefined);
+        }}
         onSubmit={handleAddTransaction}
+        initialData={editingTransaction}
         loading={loading}
       />
 
@@ -229,15 +304,18 @@ export const Dashboard = () => {
         onOpenChange={setIsExportOpen}
         transactions={filteredTransactions}
         dateRange={selectedRange}
+        userCity={profile.city || 'Sukabumi'}
       />
 
       {/* Floating Action Button for Mobile */}
-      <button
-        onClick={() => setIsFormOpen(true)}
-        className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
-      >
-        <Plus size={24} />
-      </button>
+      {!showProfile && (
+        <button
+          onClick={() => setIsFormOpen(true)}
+          className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
+        >
+          <Plus size={24} />
+        </button>
+      )}
     </div>
   );
 };

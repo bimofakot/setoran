@@ -1,313 +1,161 @@
-# Keuanganku - Aplikasi Manajemen Keuangan Pribadi
+# Setoranku — Aplikasi Keuangan Pribadi
 
-**Read this in:** [English](README.md) | [Bahasa Indonesia](README.id.md)
+**Baca dalam:** [English](README.md) | [Bahasa Indonesia](README.id.md)
 
-Aplikasi web modern untuk melacak pendapatan dan pengeluaran harian dengan tampilan yang indah dan responsif. Dibangun menggunakan React, TypeScript, Tailwind CSS, dan Firebase untuk penyimpanan data cloud.
+Aplikasi web modern untuk mencatat pemasukan dan pengeluaran harian. Dibangun dengan React, TypeScript, Tailwind CSS, dan Firebase — kini bisa diinstal sebagai aplikasi di Android (PWA).
 
-## 🌟 Fitur Utama
+---
 
-- **📱 Responsive Design**: Tampilan sempurna di desktop, tablet, dan mobile
-- **💾 Cloud Storage**: Data tersimpan aman di Firebase Firestore
-- **🔐 Authentication**: Sistem login dan registrasi yang aman dengan Firebase Auth
-- **💰 Tracking Transaksi**: Catat pemasukan dan pengeluaran dengan kategori lengkap
-- **📊 Dashboard Analytics**: Melihat ringkasan dan statistik keuangan
-- **🎯 Filter Tanggal**: Filter berdasarkan hari, minggu, bulan, atau tahun
-- **📥 Export Data**: Export laporan ke format CSV, JSON, dan HTML
-- **📤 Share Report**: Bagikan laporan ke teman atau keluarga
-- **🎨 Modern UI**: Antarmuka yang cantik dengan animasi halus
-- **🌓 Responsive Theme**: Otomatis menyesuaikan dengan tema device
+## ✨ Fitur Utama
+
+### 💾 Data & Keamanan
+- **Penyimpanan per-user** — Data transaksi tersimpan di `users/{userId}/transactions/`, terisolasi antar pengguna
+- **Profil user** — `fullName`, `username`, `email` tersimpan di `users/{userId}` saat registrasi; `displayName` disinkronkan ke Firebase Auth
+- **Soft-Delete** — Transaksi yang dihapus tidak benar-benar hilang, hanya ditandai `isDeleted: true`
+- **Autentikasi Firebase** — Login dengan email atau username; registrasi memerlukan username unik (alfanumerik + underscore)
+- **Kategori Custom** — Setiap user mendapat kategori default (Gaji, Makanan, dll) yang tersimpan di `users/{userId}/categories/` dan bisa dikembangkan
+
+#### Mengapa Kategori Disimpan Per-Dokumen?
+
+Setiap kategori disimpan sebagai dokumen terpisah di Firestore, bukan sebagai array dalam satu dokumen. Ini dipilih karena tiga alasan:
+
+- **Skalabilitas** — User bisa menambah kategori kustom sendiri di masa depan tanpa mengubah struktur data yang sudah ada
+- **Data Integrity** — Jika satu kategori terhapus, kategori lain tidak terpengaruh sama sekali
+- **Recovery** — Jika user tidak sengaja menghapus kategori, admin bisa membuat ulang dokumen baru dengan ID baru tanpa merusak histori transaksi lama — karena transaksi menyimpan **nama kategori sebagai string**, bukan referensi ID dokumen
+
+### 📱 Progressive Web App (PWA)
+- **Bisa diinstal di Android** — Muncul prompt "Tambahkan ke Layar Utama" otomatis di browser
+- **Offline-ready** — Service worker via Workbox meng-cache aset penting
+- **Tampil seperti native app** — Mode `standalone`, tanpa address bar browser
+
+### 🧾 Input Transaksi yang Cerdas
+- **Format Rupiah otomatis** — Angka diformat real-time saat diketik (`100000` → `100.000`)
+- **Kategori dinamis** — Dropdown kategori otomatis berubah sesuai tab Pemasukan / Pengeluaran
+- **Kategori kustom** — Memilih "Lainnya" memunculkan input teks bebas untuk nama kategori sendiri
+- **Validasi ketat** — Input hanya menerima angka; field wajib divalidasi sebelum submit
+
+### 📊 Dashboard & Laporan
+- **Kartu ringkasan interaktif** — Pemasukan, Pengeluaran, Saldo dengan efek hover animasi
+- **Filter waktu** — Hari ini, minggu ini, bulan ini, tahun ini, atau rentang tanggal custom
+- **Daftar transaksi** — Dikelompokkan per hari dengan timestamp (tanggal + jam) dan zebra striping
+- **Export PDF** — Laporan profesional: header bermerek, meta dengan label sejajar, tabel transaksi (tertua → terbaru, sticky header per halaman), neraca saldo, area tanda tangan, disclaimer formal, dan footer branding di setiap halaman
+- **Share WhatsApp** — Rincian transaksi per baris beserta total dan link aplikasi
+- **Salin Teks** — Laporan plain-text dengan detail per transaksi, aman di-paste ke mana saja
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19 dengan TypeScript
-- **Styling**: Tailwind CSS v4 + Custom Components
-- **Icons**: Lucide React
-- **Backend/Database**: Firebase (Authentication + Firestore)
-- **Build Tool**: Vite
-- **Package Manager**: npm
+| Layer | Teknologi |
+|---|---|
+| Frontend | React 19 + TypeScript |
+| Styling | Tailwind CSS v4 |
+| Icons | Lucide React |
+| Backend | Firebase Auth + Firestore |
+| Build | Vite 7 |
+| PWA | vite-plugin-pwa (Workbox) |
+| PDF | jsPDF + jspdf-autotable |
+| Excel | XLSX |
 
-## 📋 Persyaratan
+---
 
-- Node.js 18+
-- npm atau yarn
-- Account Firebase (untuk database dan hosting)
+## 🚀 Instalasi
 
-## 🚀 Instalasi & Setup
-
-### 1. Clone Repository
+### 1. Clone & Install
 
 ```bash
 git clone https://github.com/your-username/setoran.git
 cd setoran
+npm install --legacy-peer-deps
 ```
 
-### 2. Install Dependencies
+> `--legacy-peer-deps` diperlukan karena vite-plugin-pwa belum secara resmi mendukung Vite 7.
 
-```bash
-npm install
-```
+### 2. Konfigurasi Firebase
 
-### 3. Setup Firebase
-
-#### a. Buat Project di Firebase Console
-
-1. Buka [Firebase Console](https://console.firebase.google.com)
-2. Klik "Create Project" dan ikuti langkah-langkahnya
-3. Pilih atau buat location untuk Firestore Database
-4. Enable Authentication dengan Email/Password method
-
-#### b. Dapatkan Firebase Config
-
-1. Di Firebase Console, pilih project Anda
-2. Klik ⚙️ (Settings) > Project Settings
-3. Scroll down ke "Your apps" section
-4. Klik icon `</>` untuk web app
-5. Copy konfigurasi Firebase
-
-#### c. Setup Environment Variables
-
-1. Copy file `.env.example` menjadi `.env.local`:
-
-```bash
-cp .env.example .env.local
-```
-
-2. Edit `.env.local` dan masukkan Firebase config Anda:
+Salin `.env.example` ke `.env.local` lalu isi dengan konfigurasi Firebase project kamu:
 
 ```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
 ```
 
-### 4. Setup Firestore Database
-
-1. Di Firebase Console, buka Firestore Database
-2. Klik "Create Database"
-3. Pilih "Start in test mode" untuk development (ubah rules nanti untuk production)
-4. Pilih location terdekat
-
-#### Firestore Security Rules (untuk test):
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /transactions/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
-
-### 5. Jalankan Development Server
+### 3. Jalankan
 
 ```bash
 npm run dev
 ```
-
-Aplikasi akan terbuka di `http://localhost:5173`
-
-## 💻 Development
-
-### Project Structure
-
-```
-src/
-├── components/      # Komponen UI reusable
-├── hooks/          # Custom React hooks
-├── lib/            # Konfigurasi Firebase
-├── pages/          # Page components
-├── types/          # TypeScript type definitions
-├── utils/          # Utility functions
-├── App.tsx         # Main App component
-├── main.tsx        # Entry point
-└── index.css       # Global styles
-```
-
-### Available Scripts
-
-```bash
-# Development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Lint code
-npm run lint
-```
-
-## 🔐 Security Best Practices
-
-### Environment Variables
-- **Jangan commit `.env` files ke git** - Gunakan `.env.example` sebagai template
-- Selalu gunakan `import.meta.env.VITE_*` untuk environment variables di client
-- Jangan expose kunci sensitive di kode
-
-### Firebase Rules
-
-**Development (Test mode):**
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
-
-**Production (Recommended):**
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /transactions/{transaction} {
-      allow read, write: if request.auth.uid == resource.data.userId;
-      allow read, write: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
-  }
-}
-```
-
-## 🚀 Deploy ke Firebase Hosting
-
-### 1. Install Firebase CLI
-
-```bash
-npm install -g firebase-tools
-```
-
-### 2. Login ke Firebase
-
-```bash
-firebase login
-```
-
-### 3. Initialize Firebase Project
-
-```bash
-firebase init hosting
-```
-
-Jawab pertanyaan:
-- Choose your Firebase project: (pilih project Anda)
-- What do you want to use as your public directory? `dist`
-- Configure as single-page app? `Yes`
-- Set up automatic builds and deploys with GitHub? `No` (optional)
-
-### 4. Build & Deploy
-
-```bash
-# Build untuk production
-npm run build
-
-# Deploy ke Firebase Hosting
-firebase deploy
-```
-
-URL aplikasi Anda akan muncul di console output.
-
-### Update Deployment
-
-Setiap kali ada perubahan:
-
-```bash
-npm run build
-firebase deploy
-```
-
-## 📱 Responsif Design
-
-Aplikasi ini sepenuhnya responsive dan bekerja sempurna di:
-- 📱 Mobile (iOS & Android)
-- 📱 Tablet
-- 💻 Desktop & Laptop
-
-Breakpoints Tailwind yang digunakan:
-- `sm`: 640px
-- `md`: 768px
-- `lg`: 1024px
-- `xl`: 1280px
-
-## 🎨 Customization
-
-### Ubah Warna Tema
-
-Edit `src/tailwind.config.js`:
-
-```javascript
-theme: {
-  extend: {
-    colors: {
-      primary: "#3b82f6",    // Ubah primary color
-      secondary: "#10b981",  // Ubah secondary color
-      danger: "#ef4444",     // Ubah danger color
-    },
-  },
-}
-```
-
-### Ubah Kategori Transaksi
-
-Edit `src/components/TransactionForm.tsx`:
-
-```javascript
-const incomeCategories = ['Gaji', 'Freelance', ...];
-const expenseCategories = ['Makanan & Minuman', ...];
-```
-
-## 🐛 Troubleshooting
-
-### Build Error
-```bash
-# Clear cache dan rebuild
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
-
-### Firebase Connection Issues
-- Cek `.env.local` apakah sudah benar
-- Pastikan Firebase project sudah diaktifkan
-- Cek Firestore Database sudah dibuat
-
-### CSS Not Loading
-- Clear browser cache (Ctrl+Shift+Delete)
-- Pastikan Tailwind CSS sudah terinstall: `npm list tailwindcss`
-
-## 📖 Dokumentasi Lebih Lanjut
-
-- [React Documentation](https://react.dev)
-- [Firebase Documentation](https://firebase.google.com/docs)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Vite Documentation](https://vitejs.dev)
-
-## 📝 License
-
-MIT License - Bebas digunakan untuk project personal maupun komersial
-
-## 🤝 Contributing
-
-Kontribusi sangat diterima! Silakan:
-1. Fork repository
-2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 💬 Support
-
-Jika ada pertanyaan atau butuh bantuan, silakan buat issue di GitHub atau hubungi kami melalui email.
 
 ---
 
-**Dibuat dengan ❤️ untuk memanajemen keuangan pribadi Anda**
+## 🔐 Firestore Security Rules
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+---
+
+## 🏗️ Struktur Project
+
+```
+src/
+├── components/
+│   ├── TransactionForm.tsx   # Form input dengan masking Rupiah
+│   ├── TransactionList.tsx   # Daftar transaksi dengan zebra striping
+│   ├── Summary.tsx           # Kartu ringkasan keuangan
+│   ├── DateRangeFilter.tsx   # Filter periode
+│   ├── ExportShare.tsx       # Export PDF & share WhatsApp
+│   └── ui.tsx                # Komponen UI dasar
+├── hooks/
+│   ├── useTransactions.ts    # CRUD transaksi (path per-user, soft-delete)
+│   ├── useAuth.ts            # Autentikasi + inisialisasi kategori
+│   └── useCategories.ts      # Baca kategori dari Firestore
+├── lib/
+│   ├── firebase.ts           # Inisialisasi Firebase
+│   └── userSetup.ts          # Seed kategori default untuk user baru
+├── pages/
+│   ├── Dashboard.tsx
+│   └── AuthPage.tsx
+├── types/index.ts
+└── utils/helpers.ts
+```
+
+---
+
+## 🚢 Deploy ke Firebase Hosting
+
+```bash
+npm run build
+firebase deploy
+```
+
+CI/CD via GitHub Actions sudah dikonfigurasi — setiap push ke `main` otomatis build dan deploy.
+
+---
+
+## 📋 Scripts
+
+```bash
+npm run dev        # Development server
+npm run build      # Production build
+npm run preview    # Preview build (PWA aktif di sini)
+npm run lint       # Lint kode
+```
+
+---
+
+## 📝 Lisensi
+
+MIT — bebas digunakan untuk keperluan pribadi maupun komersial.

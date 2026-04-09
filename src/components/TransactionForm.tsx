@@ -28,10 +28,11 @@ export const TransactionForm = ({
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
     category: '',
-    amount: '',        // raw numeric string, no separators
+    amount: '',
     description: '',
     date: new Date().toISOString().split('T')[0],
   });
+  const [customCategory, setCustomCategory] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export const TransactionForm = ({
         description: initialData.description,
         date: new Date(initialData.date).toISOString().split('T')[0],
       });
+      setCustomCategory('');
     } else {
       setFormData({
         type: 'expense',
@@ -51,6 +53,7 @@ export const TransactionForm = ({
         description: '',
         date: new Date().toISOString().split('T')[0],
       });
+      setCustomCategory('');
     }
     setErrors({});
   }, [open, initialData]);
@@ -61,9 +64,12 @@ export const TransactionForm = ({
     setFormData((prev) => ({ ...prev, amount: raw }));
   };
 
+  const isCustom = formData.category.includes('Lainnya');
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.category) newErrors.category = 'Kategori harus dipilih';
+    if (isCustom && !customCategory.trim()) newErrors.category = 'Nama kategori kustom harus diisi';
     if (!formData.amount || Number(formData.amount) <= 0)
       newErrors.amount = 'Jumlah harus lebih dari 0';
     if (!formData.date) newErrors.date = 'Tanggal harus dipilih';
@@ -77,8 +83,8 @@ export const TransactionForm = ({
     try {
       await onSubmit({
         type: formData.type,
-        category: formData.category,
-        amount: Number(formData.amount),   // angka murni
+        category: isCustom ? customCategory.trim() : formData.category,
+        amount: Number(formData.amount),
         description: formData.description,
         date: new Date(formData.date),
         userId: '',
@@ -134,13 +140,24 @@ export const TransactionForm = ({
         <Select
           label="Kategori"
           value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          options={categories.map((cat) => ({
-            value: cat,
-            label: cat,
-          }))}
+          onChange={(e) => {
+            setFormData({ ...formData, category: e.target.value });
+            setCustomCategory('');
+          }}
+          options={categories.map((cat) => ({ value: cat, label: cat }))}
           error={errors.category}
         />
+
+        {/* Custom category input — muncul jika pilih "Lainnya" */}
+        {isCustom && (
+          <Input
+            label="Nama Kategori Kustom"
+            type="text"
+            placeholder="Contoh: Arisan, Zakat, Hobi..."
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+          />
+        )}
 
         {/* Amount */}
         <Input

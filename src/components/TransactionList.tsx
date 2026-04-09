@@ -104,6 +104,12 @@ export const TransactionList = ({
                     {transaction.description && (
                       <p className="text-xs sm:text-sm text-slate-500 truncate">{transaction.description}</p>
                     )}
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {new Date(transaction.date).toLocaleString('id-ID', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit',
+                      })}
+                    </p>
                   </div>
                 </div>
 

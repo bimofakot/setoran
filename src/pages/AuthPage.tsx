@@ -8,7 +8,7 @@ interface LoginProps {
 }
 
 export const Login = ({ onSwitchToSignup }: LoginProps) => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login, loading } = useAuth();
@@ -16,9 +16,8 @@ export const Login = ({ onSwitchToSignup }: LoginProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     try {
-      await login(email, password);
+      await login(identifier, password);
     } catch (err: any) {
       setError(err.message || 'Gagal login');
     }
@@ -32,24 +31,20 @@ export const Login = ({ onSwitchToSignup }: LoginProps) => {
             <LogIn size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900">Masuk</h1>
-          <p className="text-slate-600 text-sm mt-2">
-            Kelola keuangan Anda dengan mudah
-          </p>
+          <p className="text-slate-600 text-sm mt-2">Kelola keuangan Anda dengan mudah</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
           <Input
-            label="Email"
-            type="email"
-            placeholder="email@gmail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            label="Email atau Username"
+            type="text"
+            placeholder="email@gmail.com atau username"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
           />
           <Input
@@ -60,39 +55,20 @@ export const Login = ({ onSwitchToSignup }: LoginProps) => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <Button
-            type="submit"
-            fullWidth
-            loading={loading}
-            className="mt-6"
-          >
+          <Button type="submit" fullWidth loading={loading} className="mt-6">
             Masuk Sekarang
           </Button>
         </form>
 
         <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-slate-600">atau</span>
-          </div>
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-300"></div></div>
+          <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-slate-600">atau</span></div>
         </div>
 
-        <Button
-          type="button"
-          variant="secondary"
-          fullWidth
-          onClick={onSwitchToSignup}
-          className="flex items-center justify-center gap-2"
-        >
-          <UserPlus size={18} />
-          Buat Akun Baru
+        <Button type="button" variant="secondary" fullWidth onClick={onSwitchToSignup} className="flex items-center justify-center gap-2">
+          <UserPlus size={18} /> Buat Akun Baru
         </Button>
-
-        <p className="text-center text-slate-600 text-xs mt-6">
-          Dengan masuk, Anda menyetujui Kebijakan Privasi kami
-        </p>
+        <p className="text-center text-slate-600 text-xs mt-6">Dengan masuk, Anda menyetujui Kebijakan Privasi kami</p>
       </div>
     </div>
   );
@@ -103,6 +79,8 @@ interface SignupProps {
 }
 
 export const Signup = ({ onSwitchToLogin }: SignupProps) => {
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -113,18 +91,11 @@ export const Signup = ({ onSwitchToLogin }: SignupProps) => {
     e.preventDefault();
     setError('');
 
-    if (password !== confirmPassword) {
-      setError('Kata sandi tidak cocok');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Kata sandi minimal 6 karakter');
-      return;
-    }
+    if (password !== confirmPassword) { setError('Kata sandi tidak cocok'); return; }
+    if (password.length < 6) { setError('Kata sandi minimal 6 karakter'); return; }
 
     try {
-      await signup(email, password);
+      await signup(email, password, fullName, username);
     } catch (err: any) {
       setError(err.message || 'Gagal membuat akun');
     }
@@ -138,18 +109,30 @@ export const Signup = ({ onSwitchToLogin }: SignupProps) => {
             <UserPlus size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900">Daftar</h1>
-          <p className="text-slate-600 text-sm mt-2">
-            Buat akun baru untuk mulai
-          </p>
+          <p className="text-slate-600 text-sm mt-2">Buat akun baru untuk mulai</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+          <Input
+            label="Nama Lengkap"
+            type="text"
+            placeholder="Nama lengkap Anda"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
+          <Input
+            label="Username"
+            type="text"
+            placeholder="huruf, angka, underscore (tanpa spasi)"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
           <Input
             label="Email"
             type="email"
@@ -174,39 +157,20 @@ export const Signup = ({ onSwitchToLogin }: SignupProps) => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-          <Button
-            type="submit"
-            fullWidth
-            loading={loading}
-            className="mt-6"
-          >
+          <Button type="submit" fullWidth loading={loading} className="mt-6">
             Buat Akun
           </Button>
         </form>
 
         <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-slate-600">atau</span>
-          </div>
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-300"></div></div>
+          <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-slate-600">atau</span></div>
         </div>
 
-        <Button
-          type="button"
-          variant="secondary"
-          fullWidth
-          onClick={onSwitchToLogin}
-          className="flex items-center justify-center gap-2"
-        >
-          <LogIn size={18} />
-          Sudah Punya Akun?
+        <Button type="button" variant="secondary" fullWidth onClick={onSwitchToLogin} className="flex items-center justify-center gap-2">
+          <LogIn size={18} /> Sudah Punya Akun?
         </Button>
-
-        <p className="text-center text-slate-600 text-xs mt-6">
-          Dengan mendaftar, Anda menyetujui Kebijakan Privasi kami
-        </p>
+        <p className="text-center text-slate-600 text-xs mt-6">Dengan mendaftar, Anda menyetujui Kebijakan Privasi kami</p>
       </div>
     </div>
   );
