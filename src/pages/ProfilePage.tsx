@@ -137,7 +137,7 @@ ${name}`
   const expenseCategories = categories.filter((c) => c.type === 'expense');
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 animate-fade-up">
+    <div className="max-w-2xl mx-auto space-y-5 animate-fade-up mobile-pb md:pb-0">
       {/* Profile Form */}
       <div className="card">
         <div className="flex items-center gap-3 mb-5">

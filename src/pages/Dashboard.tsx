@@ -135,17 +135,7 @@ export const Dashboard = () => {
 
   const handleContactWA = () => {
     const name = profile?.displayName || user?.email || 'Pengguna';
-    const msg =
-`Halo Tim Keuanganku 👋
-
-Saya ingin menyampaikan pertanyaan/kendala berikut:
-
-• Nama       : ${name}
-• Sumber info: (Contoh: GitHub / LinkedIn / Teman / Google)
-• Kendala    : [Jelaskan masalah atau pertanyaan Anda di sini]
-
-Terima kasih atas bantuannya!
-— Dikirim dari setoran.massbim.my.id`;
+    const msg = `Halo Tim Keuanganku 👋\n\nNama: ${name}\nSumber info: \nKendala: \n\n— setoran.massbim.my.id`;
     window.open(`https://wa.me/${SUPPORT_WA}?text=${encodeURIComponent(msg)}`, '_blank');
     setShowContactMenu(false); setSidebarOpen(false);
   };
@@ -153,21 +143,16 @@ Terima kasih atas bantuannya!
   const handleContactEmail = () => {
     const name = profile?.displayName || user?.email || 'Pengguna';
     const subject = encodeURIComponent('Bantuan - Keuanganku App');
-    const body = encodeURIComponent(
-`Halo Tim Keuanganku,
-
-Nama       : ${name}
-Sumber info: (Contoh: GitHub / LinkedIn / Teman / Google)
-Kendala    : [Jelaskan masalah atau pertanyaan Anda di sini]
-
-Terima kasih,
-${name}`
-    );
+    const body = encodeURIComponent(`Nama: ${name}\nSumber info: \nKendala: \n\n— setoran.massbim.my.id`);
     window.open(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`, '_blank');
     setShowContactMenu(false); setSidebarOpen(false);
   };
 
-  const dateLabel = { today: 'Hari Ini', week: 'Minggu Ini', month: 'Bulan Ini', year: 'Tahun Ini', custom: 'Custom' }[selectedRange];
+  const dateLabel: Record<DateRange, string> = {
+    today: 'Hari Ini', week: 'Minggu Ini', lastWeek: 'Minggu Lalu',
+    month: 'Bulan Ini', lastMonth: 'Bulan Lalu',
+    year: 'Tahun Ini', lastYear: 'Tahun Lalu', custom: 'Custom',
+  };
   const displayName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
@@ -191,54 +176,15 @@ ${name}`
         <Share2 size={16} /> Bagikan / Export
       </button>
 
-      {/* Hubungi Kami inline */}
-      <button onClick={() => setShowContactMenu(v => !v)} className="nav-item">
+      {/* Hubungi Kami */}
+      <button onClick={() => { setShowContactMenu(v => !v); setShowHelp(false); }} className={`nav-item ${showContactMenu ? 'active' : ''}`}>
         <MessageCircle size={16} /> Hubungi Kami
       </button>
-      {showContactMenu && (
-        <div className="mx-1 mb-1 rounded-xl border overflow-hidden animate-fade-up" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
-          <button onClick={handleContactWA}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors text-left"
-            style={{ color: 'var(--text-secondary)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <MessageCircle size={14} className="text-green-500 shrink-0" />
-            <div>
-              <p className="font-medium text-xs" style={{ color: 'var(--text-primary)' }}>WhatsApp</p>
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Respons cepat</p>
-            </div>
-          </button>
-          <button onClick={handleContactEmail}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors text-left border-t"
-            style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <Mail size={14} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
-            <div>
-              <p className="font-medium text-xs" style={{ color: 'var(--text-primary)' }}>Email</p>
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Untuk lampiran dokumen</p>
-            </div>
-          </button>
-        </div>
-      )}
 
       {/* Bantuan */}
-      <button onClick={() => setShowHelp(v => !v)} className="nav-item">
+      <button onClick={() => { setShowHelp(v => !v); setShowContactMenu(false); }} className={`nav-item ${showHelp ? 'active' : ''}`}>
         <HelpCircle size={16} /> Bantuan
       </button>
-      {showHelp && (
-        <div className="mx-1 mb-1 rounded-xl border p-3 space-y-2.5 animate-fade-up" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
-          {HELP_STEPS.map((s) => (
-            <div key={s.title} className="flex gap-2.5">
-              <span className="text-base shrink-0 mt-0.5">{s.icon}</span>
-              <div>
-                <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{s.title}</p>
-                <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{s.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
       <hr className="sidebar-divider" />
       <span className="sidebar-section">Tampilan</span>
@@ -333,7 +279,7 @@ ${name}`
                 </button>
               </div>
 
-              <Summary transactions={filteredTransactions} dateLabel={dateLabel} />
+              <Summary transactions={filteredTransactions} dateLabel={dateLabel[selectedRange]} />
               <QuickStats transactions={filteredTransactions} />
 
               <div className="card">
@@ -409,6 +355,89 @@ ${name}`
         dateRange={selectedRange}
         userCity={profile.city || 'Sukabumi'}
       />
+
+      {/* Floating: Hubungi Kami */}
+      {showContactMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setShowContactMenu(false)} />
+          <div className="floating-window">
+            <div className="floating-window-header">
+              <div className="flex items-center gap-2">
+                <MessageCircle size={15} style={{ color: 'var(--accent-light)' }} />
+                <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Hubungi Kami</span>
+              </div>
+              <button onClick={() => setShowContactMenu(false)} className="p-1 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                <X size={15} />
+              </button>
+            </div>
+            <div className="floating-window-body space-y-2">
+              <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Pilih saluran bantuan yang paling nyaman untuk Anda.</p>
+              <button onClick={handleContactWA}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
+                style={{ background: 'rgba(5,150,105,0.06)', borderColor: 'rgba(5,150,105,0.2)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(5,150,105,0.12)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(5,150,105,0.06)')}>
+                <div className="w-9 h-9 rounded-xl bg-green-500/15 flex items-center justify-center shrink-0">
+                  <MessageCircle size={16} className="text-green-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>WhatsApp</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Respons cepat, hari kerja 08.00–17.00</p>
+                </div>
+              </button>
+              <button onClick={handleContactEmail}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
+                style={{ background: 'var(--bg-subtle)', borderColor: 'var(--border)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg-subtle)')}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(109,40,217,0.1)' }}>
+                  <Mail size={16} style={{ color: 'var(--accent-light)' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Email</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Untuk pertanyaan detail atau lampiran</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Floating: Bantuan */}
+      {showHelp && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setShowHelp(false)} />
+          <div className="floating-window">
+            <div className="floating-window-header">
+              <div className="flex items-center gap-2">
+                <HelpCircle size={15} style={{ color: 'var(--accent-light)' }} />
+                <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Panduan Penggunaan</span>
+              </div>
+              <button onClick={() => setShowHelp(false)} className="p-1 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle-hover)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                <X size={15} />
+              </button>
+            </div>
+            <div className="floating-window-body space-y-3">
+              {HELP_STEPS.map((s, i) => (
+                <div key={s.title} className="flex gap-3">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-sm font-bold"
+                    style={{ background: 'var(--bg-subtle)', color: 'var(--accent-light)', border: '1px solid var(--border)' }}>
+                    {i + 1}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{s.title}</p>
+                    <p className="text-xs leading-relaxed mt-0.5" style={{ color: 'var(--text-secondary)' }}>{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

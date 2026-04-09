@@ -64,7 +64,7 @@ export const Analytics = ({ transactions }: AnalyticsProps) => {
   const colors = ['#7c3aed', '#3b82f6', '#ec4899', '#f59e0b', '#10b981'];
 
   return (
-    <div className="space-y-6 animate-fade-up">
+    <div className="space-y-6 animate-fade-up mobile-pb md:pb-0">
       {/* Trend Line Chart */}
       <div className="card">
         <div className="flex items-center gap-2 mb-4">

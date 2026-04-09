@@ -40,4 +40,4 @@ export interface CategoryStats {
   count: number;
 }
 
-export type DateRange = 'today' | 'week' | 'month' | 'year' | 'custom';
+export type DateRange = 'today' | 'week' | 'month' | 'year' | 'lastWeek' | 'lastMonth' | 'lastYear' | 'custom';
